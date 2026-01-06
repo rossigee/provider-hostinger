@@ -1,0 +1,47 @@
+---
+# This example shows how to configure the Hostinger provider using
+# API v1 key authentication (customer ID + API key)
+#
+# Prerequisites:
+# 1. Create a Kubernetes secret with your Hostinger credentials
+# 2. Install the provider-hostinger Crossplane provider package
+#
+# To use this example:
+# 1. Update the secret with your actual credentials
+# 2. Apply the secret: kubectl apply -f secret.yaml
+# 3. Apply this ProviderConfig: kubectl apply -f providerconfig-v1-apikey.yaml
+#
+
+# First, create the secret containing your Hostinger API credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hostinger-v1-credentials
+  namespace: crossplane-system
+type: Opaque
+stringData:
+  api-key: "your-hostinger-api-key-here"
+  customer-id: "your-hostinger-customer-id-here"
+
+---
+# Now create the ProviderConfig that references the secret
+apiVersion: hostinger.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: hostinger-v1-default
+  namespace: crossplane-system
+spec:
+  credentials:
+    apiKeyAuth:
+      # Endpoint is optional - defaults to https://api.hostinger.com/v1
+      endpoint: "https://api.hostinger.com/v1"
+
+      # Reference to the secret containing your API key
+      apiKeySecretRef:
+        name: hostinger-v1-credentials
+        key: api-key
+
+      # Reference to the secret containing your customer ID
+      customerIdSecretRef:
+        name: hostinger-v1-credentials
+        key: customer-id

@@ -1,0 +1,15 @@
+apiVersion: meta.pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-hostinger
+  annotations:
+    meta.crossplane.io/maintainer: Ross Golder <ross@golder.tech>
+    meta.crossplane.io/source: github.com/rossigee/provider-hostinger
+    meta.crossplane.io/license: Apache-2.0
+    meta.crossplane.io/description: |
+      Crossplane provider for managing Hostinger VPS and cloud services
+spec:
+  controller:
+    permissionRequests: []
+  crossplane:
+    version: ">=v2.0.0"

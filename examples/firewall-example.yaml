@@ -1,0 +1,155 @@
+---
+# This example shows how to manage firewall rules for Hostinger VPS instances
+# using the Crossplane provider-hostinger
+#
+# Prerequisites:
+# 1. A VPS Instance must exist (see instance-example.yaml)
+# 2. A ProviderConfig must be created
+# 3. The provider-hostinger package must be installed
+#
+
+# Basic firewall rules example
+apiVersion: firewall.m.hostinger.crossplane.io/v1beta1
+kind: FirewallRule
+metadata:
+  name: firewall-example-vps-01
+  namespace: default
+spec:
+  providerConfigRef:
+    name: hostinger-v1-default
+
+  forProvider:
+    # Instance ID to apply firewall rules to
+    instanceId: "123456"
+
+    # Default action for traffic not matching any rules
+    defaultAction: deny
+
+    # Firewall rules
+    rules:
+      # Allow SSH (port 22)
+      - port: "22"
+        protocol: tcp
+        direction: inbound
+        action: allow
+        source: "0.0.0.0/0"  # Allow from anywhere
+
+      # Allow HTTP (port 80)
+      - port: "80"
+        protocol: tcp
+        direction: inbound
+        action: allow
+        source: "0.0.0.0/0"
+
+      # Allow HTTPS (port 443)
+      - port: "443"
+        protocol: tcp
+        direction: inbound
+        action: allow
+        source: "0.0.0.0/0"
+
+      # Allow DNS queries (port 53)
+      - port: "53"
+        protocol: udp
+        direction: inbound
+        action: allow
+        source: "0.0.0.0/0"
+
+  deletionPolicy: Delete
+
+---
+# Restrictive firewall example (production)
+apiVersion: firewall.m.hostinger.crossplane.io/v1beta1
+kind: FirewallRule
+metadata:
+  name: firewall-production-vps-web-01
+  namespace: production
+spec:
+  providerConfigRef:
+    name: hostinger-v2-default
+
+  forProvider:
+    instanceId: "654321"
+    defaultAction: deny
+
+    rules:
+      # SSH only from office network
+      - port: "22"
+        protocol: tcp
+        direction: inbound
+        action: allow
+        source: "203.0.113.0/24"  # Replace with your office IP range
+
+      # HTTP from anywhere
+      - port: "80"
+        protocol: tcp
+        direction: inbound
+        action: allow
+        source: "0.0.0.0/0"
+
+      # HTTPS from anywhere
+      - port: "443"
+        protocol: tcp
+        direction: inbound
+        action: allow
+        source: "0.0.0.0/0"
+
+      # Allow all outbound traffic
+      - port: "1:65535"
+        protocol: tcp
+        direction: outbound
+        action: allow
+        destination: "0.0.0.0/0"
+
+      - port: "1:65535"
+        protocol: udp
+        direction: outbound
+        action: allow
+        destination: "0.0.0.0/0"
+
+  deletionPolicy: Orphan
+
+---
+# Database server firewall rules
+apiVersion: firewall.m.hostinger.crossplane.io/v1beta1
+kind: FirewallRule
+metadata:
+  name: firewall-database-vps-01
+  namespace: production
+spec:
+  providerConfigRef:
+    name: hostinger-v1-default
+
+  forProvider:
+    instanceId: "789012"
+    defaultAction: deny
+
+    rules:
+      # SSH from bastion host only
+      - port: "22"
+        protocol: tcp
+        direction: inbound
+        action: allow
+        source: "10.0.1.50/32"
+
+      # MySQL/MariaDB from application servers only
+      - port: "3306"
+        protocol: tcp
+        direction: inbound
+        action: allow
+        source: "10.0.1.0/24"
+
+      # PostgreSQL from application servers only
+      - port: "5432"
+        protocol: tcp
+        direction: inbound
+        action: allow
+        source: "10.0.1.0/24"
+
+      # Allow all outbound
+      - port: "1:65535"
+        protocol: tcp
+        direction: outbound
+        action: allow
+
+  deletionPolicy: Orphan

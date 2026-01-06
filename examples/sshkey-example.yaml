@@ -1,0 +1,122 @@
+---
+# This example shows how to manage SSH keys for Hostinger VPS instances
+# using the Crossplane provider-hostinger
+#
+# Prerequisites:
+# 1. A VPS Instance must exist (see instance-example.yaml)
+# 2. A ProviderConfig must be created
+# 3. SSH public key file(s)
+# 4. The provider-hostinger package must be installed
+#
+
+# Create a secret containing your SSH public key
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ssh-key-developer-01
+  namespace: default
+type: Opaque
+stringData:
+  public-key: |
+    ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC3hV... (your actual public key here)
+
+---
+# Add SSH key to VPS instance
+apiVersion: sshkey.m.hostinger.crossplane.io/v1beta1
+kind: SSHKey
+metadata:
+  name: ssh-key-developer-01
+  namespace: default
+spec:
+  providerConfigRef:
+    name: hostinger-v1-default
+
+  forProvider:
+    # Human-readable name for the SSH key
+    name: "Developer Laptop SSH Key"
+
+    # Reference to the secret containing the public key
+    publicKeySecretRef:
+      name: ssh-key-developer-01
+      key: public-key
+
+    # Instance IDs to attach this SSH key to
+    instanceIds:
+      - "123456"
+
+  deletionPolicy: Delete
+
+---
+# Multiple SSH keys for a single instance
+apiVersion: sshkey.m.hostinger.crossplane.io/v1beta1
+kind: SSHKey
+metadata:
+  name: ssh-key-production-team
+  namespace: production
+spec:
+  providerConfigRef:
+    name: hostinger-v2-default
+
+  forProvider:
+    name: "Production Team SSH Key"
+
+    publicKeySecretRef:
+      name: ssh-key-production-team
+      key: public-key
+
+    # Attach to multiple instances
+    instanceIds:
+      - "654321"  # Web server 1
+      - "789012"  # Web server 2
+      - "345678"  # Application server
+
+  # Keep SSH key configuration even if resource is deleted
+  deletionPolicy: Orphan
+
+---
+# Development SSH key
+apiVersion: sshkey.m.hostinger.crossplane.io/v1beta1
+kind: SSHKey
+metadata:
+  name: ssh-key-dev-shared
+  namespace: development
+spec:
+  providerConfigRef:
+    name: hostinger-v1-default
+
+  forProvider:
+    name: "Development Team Shared SSH Key"
+
+    publicKeySecretRef:
+      name: ssh-key-dev-shared
+      key: public-key
+
+    instanceIds:
+      - "901234"  # Dev environment
+
+  deletionPolicy: Delete
+
+---
+# Automated deployment SSH key
+apiVersion: sshkey.m.hostinger.crossplane.io/v1beta1
+kind: SSHKey
+metadata:
+  name: ssh-key-ci-cd
+  namespace: production
+spec:
+  providerConfigRef:
+    name: hostinger-v2-default
+
+  forProvider:
+    name: "CI/CD Pipeline Deployment Key"
+
+    publicKeySecretRef:
+      name: ssh-key-ci-cd
+      key: public-key
+
+    # Attach to deployment target instances
+    instanceIds:
+      - "654321"  # Production web server
+
+  # Keep key for continuous deployments
+  deletionPolicy: Orphan

@@ -1,0 +1,51 @@
+---
+# This example shows how to configure the Hostinger provider using
+# API v2 OAuth authentication (client ID + client secret)
+#
+# Prerequisites:
+# 1. Create OAuth2 credentials in your Hostinger account
+# 2. Create a Kubernetes secret with your OAuth credentials
+# 3. Install the provider-hostinger Crossplane provider package
+#
+# To use this example:
+# 1. Update the secret with your actual OAuth credentials
+# 2. Apply the secret: kubectl apply -f secret.yaml
+# 3. Apply this ProviderConfig: kubectl apply -f providerconfig-v2-oauth.yaml
+#
+
+# First, create the secret containing your Hostinger OAuth credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hostinger-v2-oauth-credentials
+  namespace: crossplane-system
+type: Opaque
+stringData:
+  client-id: "your-oauth-client-id-here"
+  client-secret: "your-oauth-client-secret-here"
+
+---
+# Now create the ProviderConfig that references the secret
+apiVersion: hostinger.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: hostinger-v2-default
+  namespace: crossplane-system
+spec:
+  credentials:
+    oauthAuth:
+      # Endpoint is optional - defaults to https://api.hostinger.com/v2
+      endpoint: "https://api.hostinger.com/v2"
+
+      # Token endpoint is optional - defaults to https://auth.hostinger.com/oauth/token
+      tokenEndpoint: "https://auth.hostinger.com/oauth/token"
+
+      # Reference to the secret containing your client ID
+      clientIdSecretRef:
+        name: hostinger-v2-oauth-credentials
+        key: client-id
+
+      # Reference to the secret containing your client secret
+      clientSecretSecretRef:
+        name: hostinger-v2-oauth-credentials
+        key: client-secret

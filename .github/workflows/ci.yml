@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  REGISTRY_ORGS: ghcr.io/rossigee
+  CROSSPLANE_VERSION: v2.0.2
+  GO_REQUIRED_VERSION: 1.25.5
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_REQUIRED_VERSION }}
+          cache: true
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          skip-pkg-cache: true
+          skip-build-cache: true
+
+  check-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_REQUIRED_VERSION }}
+          cache: true
+
+      - name: Check go.mod and go.sum are up to date
+        run: |
+          go mod tidy
+          git diff --exit-code
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_REQUIRED_VERSION }}
+          cache: true
+
+      - name: Run unit tests
+        run: make test
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.out
+          fail_ci_if_error: false
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_REQUIRED_VERSION }}
+          cache: true
+
+      - name: Run govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+      - name: Run gosec
+        uses: securego/gosec@master
+        with:
+          args: '-no-fail -fmt sarif -out gosec-results.sarif ./...'
+
+      - name: Upload gosec results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: gosec-results.sarif
+          category: gosec
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, check-diff, unit-tests]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_REQUIRED_VERSION }}
+          cache: true
+
+      - name: Build provider binary
+        run: make build
+
+      - name: Verify build artifacts
+        run: |
+          ls -lh bin/
+          file bin/*/provider || true

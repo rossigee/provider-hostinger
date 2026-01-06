@@ -1,0 +1,122 @@
+---
+# This example shows how to create and manage a Hostinger VPS instance
+# using the Crossplane provider-hostinger
+#
+# Prerequisites:
+# 1. A ProviderConfig must be created (see providerconfig-v1-apikey.yaml)
+# 2. The provider-hostinger package must be installed
+#
+# To use this example:
+# 1. Create your ProviderConfig first
+# 2. Create the root password secret (if using root password)
+# 3. Apply this manifest: kubectl apply -f instance-example.yaml
+#
+
+# Secret for the VPS root password
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vps-root-password
+  namespace: default
+type: Opaque
+stringData:
+  password: "SecureRootPassword123!"  # Replace with your desired root password
+
+---
+# Basic VPS Instance example
+apiVersion: instance.m.hostinger.crossplane.io/v1beta1
+kind: Instance
+metadata:
+  name: example-vps-01
+  namespace: default
+spec:
+  # Reference to the ProviderConfig
+  providerConfigRef:
+    name: hostinger-v1-default
+
+  # Resource parameters for the VPS instance
+  forProvider:
+    # Hostname for the VPS (required)
+    hostname: "example-vps-01.example.com"
+
+    # Operating system template ID (required)
+    # Common options: 1 (Ubuntu 22.04), 2 (CentOS 8), 3 (Debian 12), etc.
+    osId: "1"
+
+    # CPU cores (required, minimum: 1)
+    cpuCount: 2
+
+    # RAM in MB (required, minimum: 512)
+    ram: 2048
+
+    # Disk size in GB (required, minimum: 10)
+    diskSize: 50
+
+    # Bandwidth in Mbps (optional, defaults from plan)
+    bandwidth: 1000
+
+    # Enable IPv6 (optional, defaults to false)
+    ipv6Enabled: true
+
+    # Inode limit (optional, for file system limits)
+    inodes: 1000000
+
+    # Root password reference (optional)
+    # If not provided, you'll receive a password via email
+    rootPasswordSecretRef:
+      name: vps-root-password
+      key: password
+
+  # Deletion policy: Delete, Orphan, or Snapshot
+  # Delete: terminate the instance when the resource is deleted
+  # Orphan: leave the instance running when the resource is deleted
+  deletionPolicy: Delete
+
+---
+# Production VPS Instance with monitoring
+apiVersion: instance.m.hostinger.crossplane.io/v1beta1
+kind: Instance
+metadata:
+  name: production-vps-web-01
+  namespace: production
+spec:
+  providerConfigRef:
+    name: hostinger-v2-default  # Using OAuth v2 provider
+
+  forProvider:
+    hostname: "web-01.production.example.com"
+    osId: "1"  # Ubuntu 22.04
+    cpuCount: 4
+    ram: 8192
+    diskSize: 100
+    bandwidth: 5000
+    ipv6Enabled: true
+    inodes: 5000000
+    rootPasswordSecretRef:
+      name: production-root-password
+      key: password
+
+  # Keep instance even if resource is deleted for safety
+  deletionPolicy: Orphan
+
+---
+# Minimal VPS Instance (development)
+apiVersion: instance.m.hostinger.crossplane.io/v1beta1
+kind: Instance
+metadata:
+  name: dev-vps-01
+  namespace: development
+spec:
+  providerConfigRef:
+    name: hostinger-v1-default
+
+  forProvider:
+    # Minimum required fields
+    hostname: "dev-vps-01.dev.example.com"
+    osId: "1"
+    cpuCount: 1
+    ram: 512
+    diskSize: 20
+
+  # Auto-cleanup on deletion
+  deletionPolicy: Delete

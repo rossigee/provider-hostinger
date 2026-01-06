@@ -1,0 +1,126 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  REGISTRY_ORGS: ghcr.io/rossigee
+  CROSSPLANE_VERSION: v2.0.2
+  GO_REQUIRED_VERSION: 1.25.5
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_REQUIRED_VERSION }}
+          cache: true
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run code generation
+        run: make generate
+
+      - name: Run linting
+        run: make lint
+
+      - name: Run tests
+        run: make test
+
+      - name: Run reviewable checks
+        run: make reviewable
+
+      - name: Build Docker image for amd64
+        run: |
+          make docker.build PLATFORMS=linux_amd64 BUILD_REGISTRY=${{ env.REGISTRY_ORGS }} VERSION=${{ steps.version.outputs.version }}
+
+      - name: Build Docker image for arm64
+        run: |
+          make docker.build PLATFORMS=linux_arm64 BUILD_REGISTRY=${{ env.REGISTRY_ORGS }} VERSION=${{ steps.version.outputs.version }}
+
+      - name: Build Crossplane package
+        run: |
+          make xpkg.build BUILD_REGISTRY=${{ env.REGISTRY_ORGS }} VERSION=${{ steps.version.outputs.version }} PLATFORMS="linux_amd64 linux_arm64"
+
+      - name: Push Docker images
+        run: |
+          docker push ${{ env.REGISTRY_ORGS }}/provider-hostinger-amd64:${{ steps.version.outputs.version }}
+          docker push ${{ env.REGISTRY_ORGS }}/provider-hostinger-arm64:${{ steps.version.outputs.version }}
+          docker push ${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }}
+          docker push ${{ env.REGISTRY_ORGS }}/provider-hostinger:latest
+
+      - name: Publish Crossplane package
+        env:
+          CROSSPLANE_CLI_VERSION: ${{ env.CROSSPLANE_VERSION }}
+        run: |
+          # Install crossplane CLI
+          curl -sL https://releases.crossplane.io/build/tag/${CROSSPLANE_CLI_VERSION}/bin/linux_amd64/crossplane -o crossplane
+          chmod +x crossplane
+
+          # Push xpkg for each platform
+          for platform in linux_amd64 linux_arm64; do
+            XPKG_FILE="_output/xpkg/${platform}/provider-hostinger-${{ steps.version.outputs.version }}.xpkg"
+            if [ -f "$XPKG_FILE" ]; then
+              ./crossplane xpkg push -f "$XPKG_FILE" "${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }}" || true
+            fi
+          done
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          body: |
+            ## Docker Images
+            - `${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }}`
+            - `${{ env.REGISTRY_ORGS }}/provider-hostinger-amd64:${{ steps.version.outputs.version }}`
+            - `${{ env.REGISTRY_ORGS }}/provider-hostinger-arm64:${{ steps.version.outputs.version }}`
+
+            ## Installation
+            ```bash
+            kubectl apply -f - <<EOF
+            apiVersion: pkg.crossplane.io/v1
+            kind: Provider
+            metadata:
+              name: provider-hostinger
+            spec:
+              package: ${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }}
+            EOF
+            ```
+
+            See the [README](https://github.com/rossigee/provider-hostinger#installation) for detailed installation and usage instructions.
+          draft: false
+          prerelease: false
+
+      - name: Verify published artifacts
+        run: |
+          echo "Verifying published artifacts..."
+          docker pull ${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }} && echo "✓ Docker image published" || echo "✗ Docker image not found"
+          echo "Release complete: ${{ steps.version.outputs.version }}"

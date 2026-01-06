@@ -1,0 +1,88 @@
+---
+# This example shows how to manage backups for Hostinger VPS instances
+# using the Crossplane provider-hostinger
+#
+# Prerequisites:
+# 1. A VPS Instance must exist (see instance-example.yaml)
+# 2. A ProviderConfig must be created
+# 3. The provider-hostinger package must be installed
+#
+
+# Manual backup example
+apiVersion: backup.m.hostinger.crossplane.io/v1beta1
+kind: Backup
+metadata:
+  name: backup-example-vps-01-manual
+  namespace: default
+spec:
+  providerConfigRef:
+    name: hostinger-v1-default
+
+  forProvider:
+    # Instance ID to backup (from the Instance resource)
+    instanceId: "123456"
+
+    # Description of the backup
+    description: "Manual backup before maintenance"
+
+    # Schedule type: manual, daily, weekly, monthly
+    # For manual backups, this can be omitted or set to "manual"
+    schedule: manual
+
+  deletionPolicy: Delete
+
+---
+# Scheduled daily backup example
+apiVersion: backup.m.hostinger.crossplane.io/v1beta1
+kind: Backup
+metadata:
+  name: backup-production-vps-01-daily
+  namespace: production
+spec:
+  providerConfigRef:
+    name: hostinger-v2-default
+
+  forProvider:
+    instanceId: "654321"
+    description: "Daily automated backup of production web server"
+    schedule: daily
+
+  # Keep backup schedule even if resource is deleted
+  deletionPolicy: Orphan
+
+---
+# Weekly backup schedule example
+apiVersion: backup.m.hostinger.crossplane.io/v1beta1
+kind: Backup
+metadata:
+  name: backup-dev-vps-01-weekly
+  namespace: development
+spec:
+  providerConfigRef:
+    name: hostinger-v1-default
+
+  forProvider:
+    instanceId: "789012"
+    description: "Weekly backup of development environment"
+    schedule: weekly
+
+  deletionPolicy: Delete
+
+---
+# Monthly backup example
+apiVersion: backup.m.hostinger.crossplane.io/v1beta1
+kind: Backup
+metadata:
+  name: backup-archive-vps-01-monthly
+  namespace: default
+spec:
+  providerConfigRef:
+    name: hostinger-v1-default
+
+  forProvider:
+    instanceId: "345678"
+    description: "Monthly archive backup for long-term retention"
+    schedule: monthly
+
+  # Keep the backup even if the resource is deleted
+  deletionPolicy: Orphan
