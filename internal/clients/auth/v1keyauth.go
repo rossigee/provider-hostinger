@@ -20,8 +20,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-
-	"k8s.io/client-go/kubernetes"
 )
 
 // V1KeyAuth implements Authenticator for Hostinger API v1 (API key + customer ID)
@@ -59,7 +57,7 @@ func (a *V1KeyAuth) GetEndpoint() string {
 }
 
 // RefreshIfNeeded performs any necessary refresh logic (v1 key auth doesn't need refresh)
-func (a *V1KeyAuth) RefreshIfNeeded(ctx context.Context, k8sClient kubernetes.Interface) error {
+func (a *V1KeyAuth) RefreshIfNeeded(ctx context.Context) error {
 	return nil // v1 API keys don't need refresh
 }
 

@@ -114,7 +114,7 @@ func (hc *HostingerClient) GetAuthType() string {
 // PrepareRequest prepares an HTTP request with authentication headers
 func (hc *HostingerClient) PrepareRequest(ctx context.Context, req *http.Request) error {
 	// Refresh authentication if needed
-	if err := hc.authenticator.RefreshIfNeeded(ctx, hc.k8sClient); err != nil {
+	if err := hc.authenticator.RefreshIfNeeded(ctx); err != nil {
 		return fmt.Errorf("failed to refresh authentication: %w", err)
 	}
 

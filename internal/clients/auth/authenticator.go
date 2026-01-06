@@ -18,8 +18,6 @@ package auth
 
 import (
 	"context"
-
-	"k8s.io/client-go/kubernetes"
 )
 
 // Authenticator handles authentication for Hostinger API requests
@@ -34,7 +32,7 @@ type Authenticator interface {
 	GetEndpoint() string
 
 	// RefreshIfNeeded checks if credentials need refreshing and updates them
-	RefreshIfNeeded(ctx context.Context, k8sClient kubernetes.Interface) error
+	RefreshIfNeeded(ctx context.Context) error
 
 	// Type returns the authentication type name
 	Type() string

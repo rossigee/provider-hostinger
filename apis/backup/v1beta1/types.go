@@ -93,6 +93,7 @@ type BackupStatus struct {
 // +kubebuilder:printcolumn:name="READY",type=string,JSONPath=.status.conditions[?(@.type=='Ready')].status
 // +kubebuilder:printcolumn:name="SYNCED",type=string,JSONPath=.status.conditions[?(@.type=='Synced')].status
 // +kubebuilder:printcolumn:name="AGE",type=date,JSONPath=.metadata.creationTimestamp
+// +genclient
 
 // Backup is the CRD type for Hostinger VPS backups.
 type Backup struct {

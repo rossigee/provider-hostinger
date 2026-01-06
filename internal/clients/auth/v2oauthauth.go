@@ -25,8 +25,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"k8s.io/client-go/kubernetes"
 )
 
 // V2OAuthAuth implements Authenticator for Hostinger API v2 (OAuth)
@@ -143,7 +141,7 @@ func (a *V2OAuthAuth) GetEndpoint() string {
 }
 
 // RefreshIfNeeded checks if the token needs refreshing and updates it
-func (a *V2OAuthAuth) RefreshIfNeeded(ctx context.Context, k8sClient kubernetes.Interface) error {
+func (a *V2OAuthAuth) RefreshIfNeeded(ctx context.Context) error {
 	a.mu.RLock()
 	needsRefresh := a.cachedToken == "" || time.Now().After(a.cachedExpiresAt.Add(-5*time.Minute))
 	a.mu.RUnlock()

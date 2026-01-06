@@ -85,6 +85,8 @@ type ProviderConfigStatus struct {
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:printcolumn:name="AGE",type=date,JSONPath=.metadata.creationTimestamp
 // +kubebuilder:printcolumn:name="READY",type=string,JSONPath=.status.conditions[?(@.type=='Ready')].status
+// +genclient
+// +genclient:nonNamespaced
 
 // ProviderConfig is the CRD type for Hostinger API provider configurations.
 type ProviderConfig struct {

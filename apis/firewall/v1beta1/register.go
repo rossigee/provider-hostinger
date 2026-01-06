@@ -16,10 +16,6 @@ limitations under the License.
 
 package v1beta1
 
-import (
-	"k8s.io/apimachinery/pkg/runtime"
-)
-
 func init() {
 	SchemeBuilder.Register(&FirewallRule{}, &FirewallRuleList{})
 }

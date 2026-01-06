@@ -134,14 +134,6 @@ func (ic *InstanceClient) GetObservation(instance *Instance) *v1beta1.InstanceOb
 		ExpirationDate:     parseTime(instance.ExpirationDate),
 	}
 
-	if instance.Bandwidth != nil {
-		obs.CurrentBandwidth = instance.Bandwidth
-	}
-
-	if instance.Inodes != nil {
-		obs.CurrentInodes = instance.Inodes
-	}
-
 	return obs
 }
 

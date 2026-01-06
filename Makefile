@@ -7,6 +7,7 @@ REGISTRY_ORGS = ghcr.io/rossigee
 XPKG_REG_ORGS ?= ghcr.io/rossigee
 CROSSPLANE_VERSION = 2.0.2
 GO_REQUIRED_VERSION ?= 1.25.5
+GOLANGCILINT_VERSION ?= 2.7.2
 
 # Go configuration
 GO_PROJECT := $(PROJECT_REPO)

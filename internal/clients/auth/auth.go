@@ -24,15 +24,16 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	v1beta1 "github.com/rossigee/provider-hostinger/apis/v1beta1"
 )
 
 // CreateAuthenticator creates an Authenticator from ProviderConfig credentials
 func CreateAuthenticator(ctx context.Context, k8sClient client.Client, config *v1beta1.ProviderConfig) (Authenticator, error) {
 	// Determine which auth method is configured
-	if config.Spec.Credentials.APIKeyAuth != nil {
+	if config.Spec.APIKeyAuth != nil {
 		return createV1KeyAuth(ctx, k8sClient, config)
-	} else if config.Spec.Credentials.OAuthAuth != nil {
+	} else if config.Spec.OAuthAuth != nil {
 		return createV2OAuthAuth(ctx, k8sClient, config)
 	}
 
@@ -41,16 +42,16 @@ func CreateAuthenticator(ctx context.Context, k8sClient client.Client, config *v
 
 // createV1KeyAuth creates a V1KeyAuth authenticator from ProviderConfig
 func createV1KeyAuth(ctx context.Context, k8sClient client.Client, config *v1beta1.ProviderConfig) (Authenticator, error) {
-	authSpec := config.Spec.Credentials.APIKeyAuth
+	authSpec := config.Spec.APIKeyAuth
 
 	// Get API key from secret
-	apiKey, err := getSecretValue(ctx, k8sClient, config.Namespace, authSpec.APIKeySecretRef)
+	apiKey, err := getSecretValue(ctx, k8sClient, config.Namespace, &authSpec.APIKeySecretRef)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get API key from secret: %w", err)
 	}
 
 	// Get customer ID from secret
-	customerID, err := getSecretValue(ctx, k8sClient, config.Namespace, authSpec.CustomerIDSecretRef)
+	customerID, err := getSecretValue(ctx, k8sClient, config.Namespace, &authSpec.CustomerIDSecretRef)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get customer ID from secret: %w", err)
 	}
@@ -66,16 +67,16 @@ func createV1KeyAuth(ctx context.Context, k8sClient client.Client, config *v1bet
 
 // createV2OAuthAuth creates a V2OAuthAuth authenticator from ProviderConfig
 func createV2OAuthAuth(ctx context.Context, k8sClient client.Client, config *v1beta1.ProviderConfig) (Authenticator, error) {
-	authSpec := config.Spec.Credentials.OAuthAuth
+	authSpec := config.Spec.OAuthAuth
 
 	// Get client ID from secret
-	clientID, err := getSecretValue(ctx, k8sClient, config.Namespace, authSpec.ClientIDSecretRef)
+	clientID, err := getSecretValue(ctx, k8sClient, config.Namespace, &authSpec.ClientIDSecretRef)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get client ID from secret: %w", err)
 	}
 
 	// Get client secret from secret
-	clientSecret, err := getSecretValue(ctx, k8sClient, config.Namespace, authSpec.ClientSecretSecretRef)
+	clientSecret, err := getSecretValue(ctx, k8sClient, config.Namespace, &authSpec.ClientSecretSecretRef)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get client secret from secret: %w", err)
 	}
@@ -96,7 +97,7 @@ func createV2OAuthAuth(ctx context.Context, k8sClient client.Client, config *v1b
 }
 
 // getSecretValue retrieves a value from a Kubernetes secret
-func getSecretValue(ctx context.Context, k8sClient client.Client, namespace string, secretRef *v1beta1.SecretKeySelector) (string, error) {
+func getSecretValue(ctx context.Context, k8sClient client.Client, namespace string, secretRef *xpv1.SecretKeySelector) (string, error) {
 	if secretRef == nil {
 		return "", fmt.Errorf("secret reference is nil")
 	}
