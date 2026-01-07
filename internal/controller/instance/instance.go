@@ -18,19 +18,17 @@ package instance
 
 import (
 	"context"
-	"fmt"
+	"time"
 
+	"github.com/pkg/errors"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
-	"github.com/crossplane/crossplane-runtime/pkg/connection"
-	"github.com/crossplane/crossplane-runtime/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
@@ -48,33 +46,29 @@ const (
 )
 
 // Setup adds a controller that reconciles Instance managed resources.
-func Setup(mgr ctrl.Manager, l log.Logger, wl workqueue.TypedRateLimiter[any]) error {
-	name := managed.ControllerName(v1beta1.Instance{})
+func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any]) error {
+	name := managed.ControllerName(v1beta1.InstanceGroupKind)
 
-	cps := []managed.ConnectionPublisher{managed.NewAPISecretPublisher(mgr.GetClient(), mgr.GetScheme())}
-	if o, ok := mgr.GetCache().(connection.Configurator); ok {
-		cps = append(cps, connection.NewDetailsManager(mgr.GetClient(), providerv1beta1.ProviderConfigGroupVersionKind, connection.WithTLSCertVersion(connection.TLSCertVersionV1)))
-		_ = o
+	o := controller.Options{
+		RateLimiter: nil, // Use default rate limiter
+		MaxConcurrentReconciles: 5,
 	}
 
 	r := managed.NewReconciler(mgr,
-		resource.ManagedKind(v1beta1.Instance{}),
+		resource.ManagedKind(v1beta1.InstanceGroupVersionKind),
 		managed.WithExternalConnecter(&connector{
-			client:      mgr.GetClient(),
-			usage:       resource.NewProviderConfigUsageTracker(mgr.GetClient(), &providerv1beta1.ProviderConfig{}),
+			kube:        mgr.GetClient(),
 			newClientFn: clients.NewClientFactory,
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithPollInterval(controller.DefaultPollingInterval),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
-		managed.WithConnectionPublishers(cps...),
+		managed.WithPollInterval(5*time.Minute),
+		managed.WithInitializers(),
 	)
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(controller.Options{
-			RateLimiter: ratelimiter.NewTypedDefaultingRateLimiter[reconcile.Request](wl),
-		}).
+		WithOptions(o).
 		For(&v1beta1.Instance{}).
 		Complete(r)
 }
@@ -82,8 +76,7 @@ func Setup(mgr ctrl.Manager, l log.Logger, wl workqueue.TypedRateLimiter[any]) e
 // A connector is expected to produce typed ExternalClient for the managed
 // resource it is supposed to manage.
 type connector struct {
-	client      client.Client
-	usage       resource.Tracker
+	kube        client.Client
 	newClientFn func(client.Client, clients.HTTPClientConfig) *clients.ClientFactory
 }
 
@@ -93,28 +86,28 @@ type connector struct {
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	cr, ok := mg.(*v1beta1.Instance)
 	if !ok {
-		return nil, fmt.Errorf(errNotInstance)
-	}
-
-	if err := c.usage.Track(ctx, mg); err != nil {
-		return nil, fmt.Errorf(errTrackPCUsage)
+		return nil, errors.New(errNotInstance)
 	}
 
 	// Get the ProviderConfig referenced by this Instance
 	pc := &providerv1beta1.ProviderConfig{}
-	if err := c.client.Get(ctx, client.ObjectKey{Name: cr.GetProviderConfigName()}, pc); err != nil {
-		return nil, fmt.Errorf(errGetPC)
+	if err := c.kube.Get(ctx, client.ObjectKey{Namespace: cr.GetNamespace(), Name: cr.Spec.ProviderConfigReference.Name}, pc); err != nil {
+		return nil, errors.Wrap(err, errGetPC)
 	}
+
+	// Create the Hostinger client factory with default config
+	clientFactory := c.newClientFn(c.kube, clients.DefaultHTTPClientConfig())
 
 	// Create the Hostinger client
-	clientFactory := c.newClientFn(c.client, clients.DefaultHTTPClientConfig())
 	hc, err := clientFactory.CreateHostingerClient(ctx, pc)
 	if err != nil {
-		return nil, fmt.Errorf(errNewClient)
+		return nil, errors.Wrap(err, errNewClient)
 	}
 
-	// Return external client with the Hostinger client
-	return &external{client: instanceclient.NewInstanceClient(hc)}, nil
+	// Create the instance client
+	instanceClient := instanceclient.NewInstanceClient(hc)
+
+	return &external{client: instanceClient}, nil
 }
 
 // An ExternalClient observes, then either creates, updates, or deletes an
@@ -126,7 +119,7 @@ type external struct {
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mg.(*v1beta1.Instance)
 	if !ok {
-		return managed.ExternalObservation{}, fmt.Errorf(errNotInstance)
+		return managed.ExternalObservation{}, errors.New(errNotInstance)
 	}
 
 	// Get the external resource ID from the resource annotation
@@ -162,13 +155,13 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
 	cr, ok := mg.(*v1beta1.Instance)
 	if !ok {
-		return managed.ExternalCreation{}, fmt.Errorf(errNotInstance)
+		return managed.ExternalCreation{}, errors.New(errNotInstance)
 	}
 
 	// Create the instance
 	instance, err := e.client.Create(ctx, &cr.Spec.ForProvider)
 	if err != nil {
-		return managed.ExternalCreation{}, err
+		return managed.ExternalCreation{}, errors.Wrap(err, "failed to create instance")
 	}
 
 	// Set the external name annotation (Crossplane uses this as the resource ID)
@@ -181,40 +174,50 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	return managed.ExternalCreation{
-		ExternalNameAssigned: true,
+		ConnectionDetails: managed.ConnectionDetails{},
 	}, nil
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
 	cr, ok := mg.(*v1beta1.Instance)
 	if !ok {
-		return managed.ExternalUpdate{}, fmt.Errorf(errNotInstance)
+		return managed.ExternalUpdate{}, errors.New(errNotInstance)
 	}
 
 	externalName := meta.GetExternalName(cr)
 	if externalName == "" {
-		return managed.ExternalUpdate{}, fmt.Errorf("external name not set")
+		return managed.ExternalUpdate{}, errors.New("external name not set")
 	}
 
 	// Update the instance
 	if err := e.client.Update(ctx, externalName, &cr.Spec.ForProvider); err != nil {
-		return managed.ExternalUpdate{}, err
+		return managed.ExternalUpdate{}, errors.Wrap(err, "failed to update instance")
 	}
 
 	return managed.ExternalUpdate{}, nil
 }
 
-func (e *external) Delete(ctx context.Context, mg resource.Managed) error {
+func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	cr, ok := mg.(*v1beta1.Instance)
 	if !ok {
-		return fmt.Errorf(errNotInstance)
+		return managed.ExternalDelete{}, errors.New(errNotInstance)
 	}
 
 	externalName := meta.GetExternalName(cr)
 	if externalName == "" {
-		return fmt.Errorf("external name not set")
+		return managed.ExternalDelete{}, nil // Already deleted or never created
 	}
 
 	// Delete the instance
-	return e.client.Delete(ctx, externalName)
+	if err := e.client.Delete(ctx, externalName); err != nil {
+		return managed.ExternalDelete{}, errors.Wrap(err, "failed to delete instance")
+	}
+
+	return managed.ExternalDelete{}, nil
+}
+
+// Disconnect closes the connection to the external service.
+func (e *external) Disconnect(ctx context.Context) error {
+	// No cleanup needed for Hostinger client
+	return nil
 }

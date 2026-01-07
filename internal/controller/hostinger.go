@@ -19,12 +19,13 @@ package controller
 import (
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log"
+
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
 	"github.com/rossigee/provider-hostinger/internal/controller/instance"
 )
 
 // Setup registers all Hostinger provider controllers with the manager
-func Setup(mgr ctrl.Manager, l log.Logger, wl workqueue.TypedRateLimiter[any]) error {
+func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any]) error {
 	return instance.Setup(mgr, l, wl)
 }

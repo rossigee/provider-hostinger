@@ -21,7 +21,7 @@ import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 // GetCondition of this SSHKey.
 func (mg *SSHKey) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
-	return mg.Status.ResourceStatus.GetCondition(ct)
+	return mg.Status.GetCondition(ct)
 }
 
 // GetDeletionPolicy of this SSHKey.
@@ -39,9 +39,9 @@ func (mg *SSHKey) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
-// SetCondition of this SSHKey.
-func (mg *SSHKey) SetCondition(c xpv1.Condition) {
-	mg.Status.ResourceStatus.SetCondition(c)
+// SetConditions of this SSHKey.
+func (mg *SSHKey) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
 }
 
 // SetDeletionPolicy of this SSHKey.
@@ -57,4 +57,24 @@ func (mg *SSHKey) SetManagementPolicies(r xpv1.ManagementPolicies) {
 // SetProviderConfigReference of this SSHKey.
 func (mg *SSHKey) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
+}
+
+// GetPublishConnectionDetailsTo of this SSHKey.
+func (mg *SSHKey) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
+	return mg.Spec.PublishConnectionDetailsTo
+}
+
+// SetPublishConnectionDetailsTo of this SSHKey.
+func (mg *SSHKey) SetPublishConnectionDetailsTo(r *xpv1.PublishConnectionDetailsTo) {
+	mg.Spec.PublishConnectionDetailsTo = r
+}
+
+// GetWriteConnectionSecretToReference of this SSHKey.
+func (mg *SSHKey) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+	return mg.Spec.WriteConnectionSecretToReference
+}
+
+// SetWriteConnectionSecretToReference of this SSHKey.
+func (mg *SSHKey) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+	mg.Spec.WriteConnectionSecretToReference = r
 }
