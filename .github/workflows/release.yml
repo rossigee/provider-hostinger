@@ -58,15 +58,26 @@ jobs:
       - name: Run linting
         run: make lint
 
-      - name: Build artifacts
+      - name: Build provider binary
         run: |
-          make build.artifacts BUILD_REGISTRY=${{ env.REGISTRY_ORGS }} VERSION=${{ steps.version.outputs.version }} PLATFORMS="linux_amd64 linux_arm64"
+          make build PLATFORMS="linux_amd64" VERSION=${{ steps.version.outputs.version }}
 
-      - name: Push Docker images
+      - name: Build and push Docker image (amd64)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./cluster/images/provider-hostinger/Dockerfile
+          build-args: |
+            TARGETOS=linux
+            TARGETARCH=amd64
+          tags: |
+            ${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }}
+            ${{ env.REGISTRY_ORGS }}/provider-hostinger:latest
+          push: true
+
+      - name: Build Crossplane package
         run: |
-          docker push ${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }}
-          docker tag ${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }} ${{ env.REGISTRY_ORGS }}/provider-hostinger:latest
-          docker push ${{ env.REGISTRY_ORGS }}/provider-hostinger:latest
+          make xpkg.build BUILD_REGISTRY=${{ env.REGISTRY_ORGS }} VERSION=${{ steps.version.outputs.version }} PLATFORMS="linux_amd64 linux_arm64"
 
       - name: Publish Crossplane package
         env:
