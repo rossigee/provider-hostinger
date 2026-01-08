@@ -118,7 +118,9 @@ func (a *V2OAuthAuth) refreshToken(ctx context.Context) (string, time.Time, erro
 	if err != nil {
 		return "", time.Time{}, fmt.Errorf("failed to request token: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", time.Time{}, fmt.Errorf("token request failed with status %d", resp.StatusCode)

@@ -16,19 +16,6 @@ limitations under the License.
 
 package v1beta1
 
-import (
-	"k8s.io/apimachinery/pkg/runtime"
-)
-
 func init() {
 	SchemeBuilder.Register(&ProviderConfig{}, &ProviderConfigList{})
-}
-
-// addKnownTypes adds all types of this group-version to the given scheme.
-func addKnownTypes(scheme *runtime.Scheme) error {
-	scheme.AddKnownTypes(SchemeGroupVersion,
-		&ProviderConfig{},
-		&ProviderConfigList{},
-	)
-	return nil
 }

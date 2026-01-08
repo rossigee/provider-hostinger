@@ -19,113 +19,66 @@ package main
 import (
 	"os"
 	"path/filepath"
-	"time"
+	"runtime"
 
-	"github.com/crossplane/crossplane-runtime/pkg/feature"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
+	"gopkg.in/alecthomas/kingpin.v2"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 
 	"github.com/rossigee/provider-hostinger/apis"
 	"github.com/rossigee/provider-hostinger/internal/controller"
+	"github.com/rossigee/provider-hostinger/internal/version"
 )
 
 func main() {
 	var (
-		metricsAddr          = os.Getenv("METRICS_BIND_ADDRESS")
-		enableLeaderElection = os.Getenv("LEADER_ELECT") == "true"
-		webhookCertDir       = os.Getenv("WEBHOOK_TLS_CERT_DIR")
-		syncPeriod           = os.Getenv("SYNC_PERIOD")
-		pollInterval         = os.Getenv("POLL_INTERVAL")
-		maxReconcileRate     = os.Getenv("MAX_RECONCILE_RATE")
+		app            = kingpin.New(filepath.Base(os.Args[0]), "Hostinger VPS support for Crossplane.").DefaultEnvars()
+		debug          = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
+		syncPeriod     = app.Flag("sync", "Controller manager sync period such as 300ms, 1.5h, or 2h45m").Short('s').Default("1h").Duration()
+		leaderElection = app.Flag("leader-election", "Use leader election for the controller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
 	)
+	kingpin.MustParse(app.Parse(os.Args[1:]))
 
-	// Set default metrics address if not provided
-	if metricsAddr == "" {
-		metricsAddr = ":8080"
+	zl := zap.New(zap.UseDevMode(*debug))
+	log := logging.NewLogrLogger(zl.WithName("provider-hostinger"))
+	if *debug {
+		// The controller-runtime runs with a no-op logger by default. It is
+		// *very* verbose even at info level, so we only provide it a real
+		// logger when we're running in debug mode.
+		ctrl.SetLogger(zl)
 	}
 
-	// Set default webhook cert dir if not provided (use environment variable)
-	if webhookCertDir == "" {
-		webhookCertDir = filepath.Join(os.TempDir(), "k8s-webhook-server", "serving-certs")
-	}
-
-	logger, err := logging.NewDefaultLogger()
-	if err != nil {
-		panic(err)
-	}
-
-	ctrl.SetLogger(logger)
-
-	logger.Info("Starting provider",
-		"syncPeriod", syncPeriod,
-		"pollInterval", pollInterval,
-		"maxReconcileRate", maxReconcileRate,
-	)
+	log.Info("Provider starting up",
+		"provider", "provider-hostinger",
+		"version", version.Version,
+		"go-version", runtime.Version(),
+		"platform", runtime.GOOS+"/"+runtime.GOARCH,
+		"sync-period", syncPeriod.String(),
+		"leader-election", *leaderElection,
+		"leader-election-id", "crossplane-leader-election-provider-hostinger",
+		"debug-mode", *debug)
 
 	cfg, err := ctrl.GetConfig()
-	if err != nil {
-		logger.Error(err, "Unable to get kubeconfig")
-		os.Exit(1)
-	}
+	kingpin.FatalIfError(err, "Cannot get API server rest config")
 
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
-		Scheme: apis.Scheme,
-		WebhookServer: webhook.NewServer(webhook.Options{
-			CertDir: webhookCertDir,
-			Port:    9443,
-		}),
-		MetricsBindAddress:     metricsAddr,
-		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "provider-hostinger",
-		SyncPeriod:             parseDuration(syncPeriod),
-		ClientDisableCacheFor:  []interface{}{},
+		LeaderElection:   *leaderElection,
+		LeaderElectionID: "crossplane-leader-election-provider-hostinger",
 	})
-	if err != nil {
-		logger.Error(err, "Unable to create manager")
-		os.Exit(1)
-	}
+	kingpin.FatalIfError(err, "Cannot create controller manager")
 
-	// Register APIs
-	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
-		logger.Error(err, "Unable to add APIs to scheme")
-		os.Exit(1)
-	}
+	rl := workqueue.DefaultTypedControllerRateLimiter[any]()
+	log.Info("Adding Hostinger APIs to scheme")
+	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add Hostinger APIs to scheme")
+	log.Info("Hostinger APIs added to scheme successfully")
+	kingpin.FatalIfError(controller.Setup(mgr, log, rl), "Cannot setup Hostinger controllers")
 
-	// Setup webhook server with TLS configuration from environment
-	mgr.GetWebhookServer().Port = 9443
-	if webhookCertDir != "" {
-		mgr.GetWebhookServer().CertDir = webhookCertDir
-	}
+	kingpin.FatalIfError(mgr.AddHealthzCheck("healthz", healthz.Ping), "Cannot add health check")
+	kingpin.FatalIfError(mgr.AddReadyzCheck("readyz", healthz.Ping), "Cannot add ready check")
 
-	// Register controllers
-	if err := controller.Setup(mgr, logger, ratelimiter.NewTypedDefaultingRateLimiter[interface{}](nil)); err != nil {
-		logger.Error(err, "Unable to setup controller")
-		os.Exit(1)
-	}
-
-	// Setup feature flags
-	if err := feature.Initialize(mgr.GetConfig()); err != nil {
-		logger.Error(err, "Unable to initialize feature flags")
-		os.Exit(1)
-	}
-
-	logger.Info("Starting manager")
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		logger.Error(err, "Problem running manager")
-		os.Exit(1)
-	}
-}
-
-// parseDuration parses a duration string or returns default
-func parseDuration(s string) *time.Duration {
-	if s == "" {
-		return nil
-	}
-	d, err := time.ParseDuration(s)
-	if err != nil {
-		return nil
-	}
-	return &d
+	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")
 }

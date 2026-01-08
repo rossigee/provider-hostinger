@@ -9,7 +9,14 @@ CROSSPLANE_VERSION = 2.0.2
 GO_REQUIRED_VERSION ?= 1.25.5
 GOLANGCILINT_VERSION ?= 2.7.2
 
+# Images configuration
+IMAGES = provider-hostinger
+
+# Crossplane package configuration
+XPKGS = provider-hostinger
+
 # Go configuration
+GO_SUBDIRS := cmd apis internal
 GO_PROJECT := $(PROJECT_REPO)
 GO_STATIC_PACKAGES = $(GO_PROJECT)/cmd/provider
 GO_LDFLAGS += -X $(GO_PROJECT)/internal/version.Version=$(VERSION)
@@ -29,17 +36,3 @@ PLATFORMS ?= linux_amd64
 
 # Ensure package metadata exists before build
 xpkg.build.provider-hostinger: do.build.images
-
-.PHONY: help
-help:
-	@echo "Provider Hostinger Build Targets"
-	@echo "================================"
-	@echo "make lint              - Lint code with golangci-lint"
-	@echo "make reviewable        - Full pre-commit check (generate + lint + test)"
-	@echo "make test              - Run unit tests with coverage"
-	@echo "make generate          - Generate CRDs and Go code"
-	@echo "make build             - Build provider binary and Docker image"
-	@echo "make docker.build      - Build Docker image locally"
-	@echo "make xpkg.build        - Build Crossplane package"
-	@echo "make publish           - Build, package, and publish to registry"
-	@echo "make clean             - Clean build artifacts"

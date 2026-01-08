@@ -1,0 +1,29 @@
+# Build artifacts
+_output/
+bin/
+dist/
+*.xpkg
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Go
+/vendor/
+*.exe
+*.test
+
+# Build tools cache
+.cache/
+
+# Test coverage
+coverage.out
+TEST_COVERAGE.md
+
+# Local environment
+.env
+.env.local

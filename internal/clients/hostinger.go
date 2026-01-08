@@ -155,7 +155,7 @@ func (hc *HostingerClient) Do(ctx context.Context, req *http.Request) (*http.Res
 
 		// Check if response indicates a retryable error
 		if resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode >= http.StatusInternalServerError {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 			if attempt < hc.config.MaxRetries {
 				time.Sleep(hc.config.RetryWaitTime * time.Duration(attempt+1))
 				continue
