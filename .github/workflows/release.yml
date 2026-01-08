@@ -26,7 +26,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_REQUIRED_VERSION }}
-          cache: true
 
       - name: Extract version from tag
         id: version
@@ -48,32 +47,25 @@ jobs:
       - name: Run code generation
         run: make generate
 
+      - name: Check go.mod is up to date
+        run: |
+          go mod tidy
+          git diff --exit-code
+
+      - name: Run unit tests
+        run: make test
+
       - name: Run linting
         run: make lint
 
-      - name: Run tests
-        run: make test
-
-      - name: Run reviewable checks
-        run: make reviewable
-
-      - name: Build Docker image for amd64
+      - name: Build artifacts
         run: |
-          make docker.build PLATFORMS=linux_amd64 BUILD_REGISTRY=${{ env.REGISTRY_ORGS }} VERSION=${{ steps.version.outputs.version }}
-
-      - name: Build Docker image for arm64
-        run: |
-          make docker.build PLATFORMS=linux_arm64 BUILD_REGISTRY=${{ env.REGISTRY_ORGS }} VERSION=${{ steps.version.outputs.version }}
-
-      - name: Build Crossplane package
-        run: |
-          make xpkg.build BUILD_REGISTRY=${{ env.REGISTRY_ORGS }} VERSION=${{ steps.version.outputs.version }} PLATFORMS="linux_amd64 linux_arm64"
+          make build.artifacts BUILD_REGISTRY=${{ env.REGISTRY_ORGS }} VERSION=${{ steps.version.outputs.version }} PLATFORMS="linux_amd64 linux_arm64"
 
       - name: Push Docker images
         run: |
-          docker push ${{ env.REGISTRY_ORGS }}/provider-hostinger-amd64:${{ steps.version.outputs.version }}
-          docker push ${{ env.REGISTRY_ORGS }}/provider-hostinger-arm64:${{ steps.version.outputs.version }}
           docker push ${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }}
+          docker tag ${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }} ${{ env.REGISTRY_ORGS }}/provider-hostinger:latest
           docker push ${{ env.REGISTRY_ORGS }}/provider-hostinger:latest
 
       - name: Publish Crossplane package
@@ -98,12 +90,10 @@ jobs:
           tag: ${{ steps.version.outputs.version }}
           name: Release ${{ steps.version.outputs.version }}
           body: |
-            ## Docker Images
-            - `${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }}`
-            - `${{ env.REGISTRY_ORGS }}/provider-hostinger-amd64:${{ steps.version.outputs.version }}`
-            - `${{ env.REGISTRY_ORGS }}/provider-hostinger-arm64:${{ steps.version.outputs.version }}`
+            ## Provider Image
+            Published to: `${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }}`
 
-            ## Installation
+            ## Crossplane Installation
             ```bash
             kubectl apply -f - <<EOF
             apiVersion: pkg.crossplane.io/v1
@@ -115,7 +105,8 @@ jobs:
             EOF
             ```
 
-            See the [README](https://github.com/rossigee/provider-hostinger#installation) for detailed installation and usage instructions.
+            ## Documentation
+            See the [README](https://github.com/rossigee/provider-hostinger) for installation and usage instructions.
           draft: false
           prerelease: false
 

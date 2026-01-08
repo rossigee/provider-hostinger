@@ -25,7 +25,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_REQUIRED_VERSION }}
-          cache: true
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v4
@@ -33,6 +32,7 @@ jobs:
           version: v2.7.2
           skip-pkg-cache: true
           skip-build-cache: true
+          skip-save-cache: true
 
   check-diff:
     runs-on: ubuntu-latest
@@ -44,7 +44,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_REQUIRED_VERSION }}
-          cache: true
 
       - name: Check go.mod and go.sum are up to date
         run: |
@@ -61,7 +60,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_REQUIRED_VERSION }}
-          cache: true
 
       - name: Run unit tests
         run: make test
@@ -82,7 +80,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_REQUIRED_VERSION }}
-          cache: true
 
       - name: Run govulncheck
         run: |
@@ -111,7 +108,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_REQUIRED_VERSION }}
-          cache: true
 
       - name: Build provider binary
         run: make build
