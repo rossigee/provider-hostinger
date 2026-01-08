@@ -75,26 +75,6 @@ jobs:
             ${{ env.REGISTRY_ORGS }}/provider-hostinger:latest
           push: true
 
-      - name: Build Crossplane package
-        run: |
-          make xpkg.build BUILD_REGISTRY=${{ env.REGISTRY_ORGS }} VERSION=${{ steps.version.outputs.version }} PLATFORMS="linux_amd64 linux_arm64"
-
-      - name: Publish Crossplane package
-        env:
-          CROSSPLANE_CLI_VERSION: ${{ env.CROSSPLANE_VERSION }}
-        run: |
-          # Install crossplane CLI
-          curl -sL https://releases.crossplane.io/build/tag/${CROSSPLANE_CLI_VERSION}/bin/linux_amd64/crossplane -o crossplane
-          chmod +x crossplane
-
-          # Push xpkg for each platform
-          for platform in linux_amd64 linux_arm64; do
-            XPKG_FILE="_output/xpkg/${platform}/provider-hostinger-${{ steps.version.outputs.version }}.xpkg"
-            if [ -f "$XPKG_FILE" ]; then
-              ./crossplane xpkg push -f "$XPKG_FILE" "${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }}" || true
-            fi
-          done
-
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
