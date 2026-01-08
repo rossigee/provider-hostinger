@@ -89,7 +89,7 @@ jobs:
           args: '-no-fail -fmt sarif -out gosec-results.sarif ./...'
 
       - name: Upload gosec results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: gosec-results.sarif
           category: gosec
@@ -111,5 +111,5 @@ jobs:
 
       - name: Verify build artifacts
         run: |
-          ls -lh bin/
-          file bin/*/provider || true
+          ls -lh _output/bin/
+          file _output/bin/*/provider || true
