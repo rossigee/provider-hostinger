@@ -12,7 +12,7 @@ env:
 
 permissions:
   packages: write
-  contents: read
+  contents: write
 
 jobs:
   release:
