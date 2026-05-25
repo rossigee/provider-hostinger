@@ -56,12 +56,12 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any
 
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(v1beta1.InstanceGroupVersionKind),
-		managed.WithExternalConnecter(&connector{
+		managed.WithExternalConnector(&connector{
 			kube:        mgr.GetClient(),
 			newClientFn: clients.NewClientFactory,
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))), //nolint:staticcheck
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)

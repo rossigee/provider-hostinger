@@ -6,8 +6,8 @@ PROJECT_REPO := github.com/rossigee/$(PROJECT_NAME)
 REGISTRY_ORGS = ghcr.io/rossigee
 XPKG_REG_ORGS ?= ghcr.io/rossigee
 CROSSPLANE_VERSION = 2.0.2
-GO_REQUIRED_VERSION ?= 1.25.5
-GOLANGCILINT_VERSION ?= 2.7.2
+GO_REQUIRED_VERSION ?= 1.26.3
+GOLANGCILINT_VERSION ?= 2.12.2
 
 # Images configuration
 IMAGES = provider-hostinger
