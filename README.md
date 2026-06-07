@@ -1,6 +1,17 @@
 # Provider Hostinger
 
+[![CI](https://img.shields.io/github/actions/workflow/status/rossigee/provider-hostinger/ci.yml?branch=master)][build]
+[![Version](https://img.shields.io/github/v/release/rossigee/provider-hostinger)][releases]
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+[build]: https://github.com/rossigee/provider-hostinger/actions/workflows/ci.yml
+[releases]: https://github.com/rossigee/provider-hostinger/releases
+
 A Crossplane provider for managing Hostinger VPS and cloud services.
+
+## Container Registry
+
+- **Primary**: `ghcr.io/rossigee/provider-hostinger:v0.1.0`
 
 ## Overview
 
