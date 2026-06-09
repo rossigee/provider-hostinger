@@ -8,7 +8,7 @@ on:
 env:
   REGISTRY_ORGS: ghcr.io/rossigee
   CROSSPLANE_VERSION: v2.0.2
-  GO_REQUIRED_VERSION: 1.25.5
+  GO_REQUIRED_VERSION: 1.26.4
 
 permissions:
   packages: write
@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
