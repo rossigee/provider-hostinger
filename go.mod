@@ -3,7 +3,7 @@ module github.com/rossigee/provider-hostinger
 go 1.26.4
 
 require (
-	github.com/crossplane/crossplane-runtime/v2 v2.3.1
+	github.com/crossplane/crossplane-runtime/v2 v2.3.2
 	github.com/crossplane/crossplane-tools v0.0.0-20251017183449-dd4517244339
 	github.com/crossplane/crossplane/apis/v2 v2.0.0-20260424160951-8f231230ebb6
 	github.com/pkg/errors v0.9.1
