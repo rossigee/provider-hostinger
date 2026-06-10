@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.0
+    controller-gen.kubebuilder.io/version: v0.21.0
   name: firewallrules.
 spec:
   group: ""
@@ -73,15 +73,11 @@ spec:
                   a Hostinger Firewall Rule.
                 properties:
                   defaultAction:
-                    allOf:
-                    - enum:
-                      - allow
-                      - deny
-                    - enum:
-                      - allow
-                      - deny
                     description: DefaultAction is the default action for traffic not
                       matching any rules.
+                    enum:
+                    - allow
+                    - deny
                     type: string
                   instanceId:
                     description: InstanceID is the ID of the VPS instance to configure
@@ -94,44 +90,31 @@ spec:
                       description: FirewallRuleSpec represents a single firewall rule
                       properties:
                         action:
-                          allOf:
-                          - enum:
-                            - allow
-                            - deny
-                          - enum:
-                            - allow
-                            - deny
                           description: Action is the action for matching traffic.
+                          enum:
+                          - allow
+                          - deny
                           type: string
                         destination:
                           description: Destination is the destination IP/CIDR for
                             outbound rules.
                           type: string
                         direction:
-                          allOf:
-                          - enum:
-                            - inbound
-                            - outbound
-                          - enum:
-                            - inbound
-                            - outbound
                           description: Direction is the traffic direction.
+                          enum:
+                          - inbound
+                          - outbound
                           type: string
                         port:
                           description: Port is the port number or port range (e.g.,
                             "80" or "8000-9000").
                           type: string
                         protocol:
-                          allOf:
-                          - enum:
-                            - tcp
-                            - udp
-                            - icmp
-                          - enum:
-                            - tcp
-                            - udp
-                            - icmp
                           description: Protocol is the network protocol.
+                          enum:
+                          - tcp
+                          - udp
+                          - icmp
                           type: string
                         source:
                           description: Source is the source IP/CIDR for inbound rules.
@@ -308,6 +291,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
+              lastHandledReconcileAt:
+                description: |-
+                  LastHandledReconcileAt holds the value of the most recent
+                  reconcile-requested-at annotation token that the controller has
+                  processed. Users can compare this to the annotation to determine
+                  whether a reconcile request has been handled.
+                type: string
               observedGeneration:
                 description: |-
                   ObservedGeneration is the latest metadata.generation
