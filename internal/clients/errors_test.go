@@ -330,9 +330,9 @@ func TestIsRateLimit_OtherError(t *testing.T) {
 
 func TestErrorTypeString(t *testing.T) {
 	tests := []struct {
-		name       string
-		errorType  ErrorType
-		expected   string
+		name      string
+		errorType ErrorType
+		expected  string
 	}{
 		{"NotFound", ErrorTypeNotFound, "NotFound"},
 		{"Unauthorized", ErrorTypeUnauthorized, "Unauthorized"},

@@ -19,13 +19,11 @@ package auth
 import (
 	"context"
 	"fmt"
-
-	corev1 "k8s.io/api/core/v1"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/rossigee/provider-hostinger/apis/v1beta1"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
-	v1beta1 "github.com/rossigee/provider-hostinger/apis/v1beta1"
 )
 
 // CreateAuthenticator creates an Authenticator from ProviderConfig credentials

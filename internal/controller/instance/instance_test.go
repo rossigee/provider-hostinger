@@ -19,10 +19,9 @@ package instance
 import (
 	"context"
 	"fmt"
+	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
+	"github.com/rossigee/provider-hostinger/internal/clients/instance"
 	"testing"
-
-	instanceapi "github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
-	instanceclient "github.com/rossigee/provider-hostinger/internal/clients/instance"
 )
 
 // MockHostingerClient is a mock implementation of the Hostinger client
@@ -88,7 +87,6 @@ func (m *MockInstanceClient) LateInitialize(instance *instanceclient.Instance, p
 func (m *MockInstanceClient) UpToDate(instance *instanceclient.Instance, params *instanceapi.InstanceParameters) bool {
 	return true
 }
-
 
 func TestConnectorConnect_Success(t *testing.T) {
 	// Note: The current Connect implementation doesn't support mocking well

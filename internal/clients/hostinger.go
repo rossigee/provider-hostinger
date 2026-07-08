@@ -19,21 +19,19 @@ package clients
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"time"
-
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	v1beta1 "github.com/rossigee/provider-hostinger/apis/v1beta1"
+	"github.com/rossigee/provider-hostinger/apis/v1beta1"
 	"github.com/rossigee/provider-hostinger/internal/clients/auth"
+	"net/http"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"time"
 )
 
 // HTTPClientConfig contains configuration for the HTTP client
 type HTTPClientConfig struct {
-	Timeout        time.Duration
-	MaxRetries     int
-	RetryWaitTime  time.Duration
-	UserAgent      string
+	Timeout       time.Duration
+	MaxRetries    int
+	RetryWaitTime time.Duration
+	UserAgent     string
 }
 
 // DefaultHTTPClientConfig returns the default HTTP client configuration

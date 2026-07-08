@@ -17,9 +17,8 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // BackupScheduleType represents the backup schedule frequency
@@ -78,13 +77,13 @@ type BackupObservation struct {
 // BackupSpec defines the desired state of a Hostinger VPS Backup.
 type BackupSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       BackupParameters `json:"forProvider"`
+	ForProvider                     BackupParameters `json:"forProvider"`
 }
 
 // BackupStatus defines the observed state of a Hostinger VPS Backup.
 type BackupStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          BackupObservation `json:"atProvider,omitempty"`
+	AtProvider                 BackupObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

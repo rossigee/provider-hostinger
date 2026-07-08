@@ -46,10 +46,10 @@ func TestNewV1KeyAuth(t *testing.T) {
 
 func TestV1KeyAuthGetAuthHeader(t *testing.T) {
 	tests := []struct {
-		name       string
-		apiKey     string
-		customerID string
-		wantErr    bool
+		name        string
+		apiKey      string
+		customerID  string
+		wantErr     bool
 		checkHeader func(string) bool
 	}{
 		{

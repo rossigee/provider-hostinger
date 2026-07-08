@@ -18,29 +18,26 @@ package instance
 
 import (
 	"context"
-	"time"
-
-	"github.com/pkg/errors"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
-
-	v1beta1 "github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
-	providerv1beta1 "github.com/rossigee/provider-hostinger/apis/v1beta1"
+	"github.com/pkg/errors"
+	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
+	"github.com/rossigee/provider-hostinger/apis/v1beta1"
 	"github.com/rossigee/provider-hostinger/internal/clients"
-	instanceclient "github.com/rossigee/provider-hostinger/internal/clients/instance"
+	"github.com/rossigee/provider-hostinger/internal/clients/instance"
 	"github.com/rossigee/provider-hostinger/internal/tracing"
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"time"
 )
 
 const (
-	errNotInstance = "managed resource is not a Instance custom resource"
+	errNotInstance  = "managed resource is not a Instance custom resource"
 	errTrackPCUsage = "cannot track ProviderConfig usage"
 	errGetPC        = "cannot get ProviderConfig"
 	errNewClient    = "cannot create new Hostinger client"
@@ -51,7 +48,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any
 	name := managed.ControllerName(v1beta1.InstanceGroupKind)
 
 	o := controller.Options{
-		RateLimiter: nil, // Use default rate limiter
+		RateLimiter:             nil, // Use default rate limiter
 		MaxConcurrentReconciles: 5,
 	}
 
@@ -62,7 +59,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any
 			newClientFn: clients.NewClientFactory,
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)

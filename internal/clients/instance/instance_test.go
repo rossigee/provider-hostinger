@@ -18,11 +18,10 @@ package instance
 
 import (
 	"context"
+	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
+	"github.com/rossigee/provider-hostinger/internal/clients"
 	"testing"
 	"time"
-
-	v1beta1 "github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
-	"github.com/rossigee/provider-hostinger/internal/clients"
 )
 
 func TestNewInstanceClient(t *testing.T) {
@@ -57,19 +56,19 @@ func TestGetObservation_ValidInstance(t *testing.T) {
 	bandwidth := int32(1000)
 
 	instance := &Instance{
-		ID:              "inst-123",
-		Hostname:        "vps.example.com",
-		Status:          "active",
-		IPAddress:       "192.168.1.100",
-		IPv6Address:     "2001:db8::1",
-		OSId:            "ubuntu20",
-		CPUCount:        4,
-		RAM:             8,
-		DiskSize:        100,
-		Bandwidth:       &bandwidth,
-		CreationDate:    &creationDate,
-		ExpirationDate:  &expirationDate,
-		IPv6Enabled:     true,
+		ID:             "inst-123",
+		Hostname:       "vps.example.com",
+		Status:         "active",
+		IPAddress:      "192.168.1.100",
+		IPv6Address:    "2001:db8::1",
+		OSId:           "ubuntu20",
+		CPUCount:       4,
+		RAM:            8,
+		DiskSize:       100,
+		Bandwidth:      &bandwidth,
+		CreationDate:   &creationDate,
+		ExpirationDate: &expirationDate,
+		IPv6Enabled:    true,
 	}
 
 	client := NewInstanceClient(nil)
@@ -444,8 +443,8 @@ func TestUpToDate_OptionalFieldsNotSet(t *testing.T) {
 	params := &v1beta1.InstanceParameters{
 		Hostname:    "vps.example.com",
 		CPUCount:    4,
-		Bandwidth:   nil,      // Not set in params
-		IPv6Enabled: nil,      // Not set in params
+		Bandwidth:   nil, // Not set in params
+		IPv6Enabled: nil, // Not set in params
 	}
 	client := NewInstanceClient(nil)
 

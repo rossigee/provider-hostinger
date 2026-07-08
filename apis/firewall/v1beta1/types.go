@@ -17,9 +17,8 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // FirewallProtocol represents the network protocol
@@ -125,13 +124,13 @@ type FirewallRuleObservation struct {
 // FirewallRuleSpec defines the desired state of a Hostinger Firewall Rule.
 type FirewallSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       FirewallRuleParameters `json:"forProvider"`
+	ForProvider                     FirewallRuleParameters `json:"forProvider"`
 }
 
 // FirewallRuleStatus defines the observed state of a Hostinger Firewall Rule.
 type FirewallStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          FirewallRuleObservation `json:"atProvider,omitempty"`
+	AtProvider                 FirewallRuleObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

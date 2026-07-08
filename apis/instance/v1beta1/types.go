@@ -17,9 +17,8 @@ limitations under the License.
 package v1beta1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
+	"github.com/crossplane/crossplane/apis/v2/core/v2"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // InstanceParameters are the configurable fields of a Hostinger VPS Instance.
@@ -101,13 +100,13 @@ type InstanceObservation struct {
 // InstanceSpec defines the desired state of a Hostinger VPS Instance.
 type InstanceSpec struct {
 	xpv1.ClusterManagedResourceSpec `json:",inline"`
-	ForProvider       InstanceParameters `json:"forProvider"`
+	ForProvider                     InstanceParameters `json:"forProvider"`
 }
 
 // InstanceStatus defines the observed state of a Hostinger VPS Instance.
 type InstanceStatus struct {
 	xpv1.ManagedResourceStatus `json:",inline"`
-	AtProvider          InstanceObservation `json:"atProvider,omitempty"`
+	AtProvider                 InstanceObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true

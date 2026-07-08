@@ -15,7 +15,4 @@ limitations under the License.
 */
 
 package v1beta1
-
-func init() {
-	SchemeBuilder.Register(&ProviderConfig{}, &ProviderConfigList{})
 }

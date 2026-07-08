@@ -19,31 +19,29 @@ package instance
 import (
 	"context"
 	"fmt"
-	"time"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	v1beta1 "github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
+	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
 	"github.com/rossigee/provider-hostinger/internal/clients"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"time"
 )
 
 // Instance represents a Hostinger VPS instance
 type Instance struct {
-	ID              string
-	Hostname        string
-	Status          string
-	IPAddress       string
-	IPv6Address     string
-	OSId            string
-	CPUCount        int32
-	RAM             int32
-	DiskSize        int32
-	Bandwidth       *int32
-	CreationDate    *string
-	ExpirationDate  *string
-	RootPassword    *string
-	IPv6Enabled     bool
-	Inodes          *int32
+	ID             string
+	Hostname       string
+	Status         string
+	IPAddress      string
+	IPv6Address    string
+	OSId           string
+	CPUCount       int32
+	RAM            int32
+	DiskSize       int32
+	Bandwidth      *int32
+	CreationDate   *string
+	ExpirationDate *string
+	RootPassword   *string
+	IPv6Enabled    bool
+	Inodes         *int32
 }
 
 // Client defines operations for managing Hostinger VPS instances
@@ -122,16 +120,16 @@ func (ic *InstanceClient) GetObservation(instance *Instance) *v1beta1.InstanceOb
 	}
 
 	obs := &v1beta1.InstanceObservation{
-		ID:                 instance.ID,
-		Status:             instance.Status,
-		IPAddress:          instance.IPAddress,
-		IPv6Address:        instance.IPv6Address,
-		CurrentHostname:    instance.Hostname,
-		CurrentCPUCount:    instance.CPUCount,
-		CurrentRAM:         instance.RAM,
-		CurrentDiskSize:    instance.DiskSize,
-		CreationDate:       parseTime(instance.CreationDate),
-		ExpirationDate:     parseTime(instance.ExpirationDate),
+		ID:              instance.ID,
+		Status:          instance.Status,
+		IPAddress:       instance.IPAddress,
+		IPv6Address:     instance.IPv6Address,
+		CurrentHostname: instance.Hostname,
+		CurrentCPUCount: instance.CPUCount,
+		CurrentRAM:      instance.RAM,
+		CurrentDiskSize: instance.DiskSize,
+		CreationDate:    parseTime(instance.CreationDate),
+		ExpirationDate:  parseTime(instance.ExpirationDate),
 	}
 
 	return obs

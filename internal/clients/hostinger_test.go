@@ -18,24 +18,23 @@ package clients
 
 import (
 	"context"
+	"github.com/rossigee/provider-hostinger/apis/v1beta1"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
-
-	v1beta1 "github.com/rossigee/provider-hostinger/apis/v1beta1"
 )
 
 // MockAuthenticator is a mock implementation of auth.Authenticator
 type MockAuthenticator struct {
-	authHeader  string
-	token       string
-	endpoint    string
-	authType    string
-	refreshErr  error
-	headerErr   error
+	authHeader   string
+	token        string
+	endpoint     string
+	authType     string
+	refreshErr   error
+	headerErr    error
 	needsRefresh bool
 }
 

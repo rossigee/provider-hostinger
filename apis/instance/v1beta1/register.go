@@ -20,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+
 const (
 	// InstanceKind is the kind of Instance resource.
 	InstanceKind = "Instance"
@@ -32,7 +33,4 @@ var (
 	// InstanceGroupVersionKind is the GroupVersionKind for Instance resources.
 	InstanceGroupVersionKind = SchemeGroupVersion.WithKind(InstanceKind)
 )
-
-func init() {
-	SchemeBuilder.Register(&Instance{}, &InstanceList{})
 }

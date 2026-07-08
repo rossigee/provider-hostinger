@@ -18,22 +18,19 @@ package main
 
 import (
 	"context"
-	"os"
-	"path/filepath"
-	"runtime"
-
-	"gopkg.in/alecthomas/kingpin.v2"
-	"k8s.io/client-go/util/workqueue"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
-
 	"github.com/rossigee/provider-hostinger/apis"
 	"github.com/rossigee/provider-hostinger/internal/controller"
 	"github.com/rossigee/provider-hostinger/internal/tracing"
 	"github.com/rossigee/provider-hostinger/internal/version"
+	"gopkg.in/alecthomas/kingpin.v2"
+	"k8s.io/client-go/util/workqueue"
+	"os"
+	"path/filepath"
+	"runtime"
+	"sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 func main() {
