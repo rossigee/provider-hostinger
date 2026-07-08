@@ -36,6 +36,7 @@ import (
 	providerv1beta1 "github.com/rossigee/provider-hostinger/apis/v1beta1"
 	"github.com/rossigee/provider-hostinger/internal/clients"
 	instanceclient "github.com/rossigee/provider-hostinger/internal/clients/instance"
+	"github.com/rossigee/provider-hostinger/internal/tracing"
 )
 
 const (
@@ -117,6 +118,10 @@ type external struct {
 }
 
 func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
+	_, span := tracing.StartSpan(ctx, "instance.observe",
+		tracing.SpanAttrs("Instance", mg.GetName(), "observe")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Instance)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotInstance)
@@ -153,6 +158,10 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
+	_, span := tracing.StartSpan(ctx, "instance.create",
+		tracing.SpanAttrs("Instance", mg.GetName(), "create")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Instance)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotInstance)
@@ -176,6 +185,10 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
+	_, span := tracing.StartSpan(ctx, "instance.update",
+		tracing.SpanAttrs("Instance", mg.GetName(), "update")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Instance)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotInstance)
@@ -195,6 +208,10 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
+	_, span := tracing.StartSpan(ctx, "instance.delete",
+		tracing.SpanAttrs("Instance", mg.GetName(), "delete")...)
+	defer span.End()
+
 	cr, ok := mg.(*v1beta1.Instance)
 	if !ok {
 		return managed.ExternalDelete{}, errors.New(errNotInstance)
