@@ -61,7 +61,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any
 			newClientFn: clients.NewClientFactory,
 		}),
 		managed.WithLogger(l.WithValues("controller", name)),
-		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))), //nolint:staticcheck
+		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))), 
 		managed.WithPollInterval(5*time.Minute),
 		managed.WithInitializers(),
 	)
