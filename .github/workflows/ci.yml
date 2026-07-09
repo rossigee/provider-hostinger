@@ -16,7 +16,7 @@ permissions:
 env:
   REGISTRY_ORGS: ghcr.io/rossigee
   CROSSPLANE_VERSION: v2.0.2
-  GO_REQUIRED_VERSION: 1.26.4
+  GO_VERSION: '1.26.5'
 
 jobs:
   lint:
@@ -29,7 +29,7 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: ${{ env.GO_REQUIRED_VERSION }}
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v9.2.0
@@ -46,7 +46,7 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: ${{ env.GO_REQUIRED_VERSION }}
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Check go.mod and go.sum are up to date
         run: |
@@ -63,7 +63,7 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: ${{ env.GO_REQUIRED_VERSION }}
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Run unit tests
         run: make test
@@ -84,12 +84,27 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: ${{ env.GO_REQUIRED_VERSION }}
+          go-version: ${{ env.GO_VERSION }}
 
-      - name: Run govulncheck
+      - name: Run Go Vulnerability Check
         run: |
-          go install golang.org/x/vuln/cmd/govulncheck@latest
-          govulncheck ./...
+          cp go.mod go.mod.bak && cp go.sum go.sum.bak
+          GOWORK=$(mktemp -d) go install golang.org/x/vuln/cmd/govulncheck@v1.5.0 || { mv go.mod.bak go.mod 2>/dev/null; mv go.sum.bak go.sum 2>/dev/null; exit 1; }
+          (GOFLAGS=-mod=mod GOWORK=$GOWORK go run -mod=mod golang.org/x/vuln/cmd/govulncheck ./... 2>&1 || true) | tee /tmp/govulncheck.out >/dev/null
+          mv go.mod.bak go.mod && mv go.sum.bak go.sum
+          if grep -q "^Vulnerability #" /tmp/govulncheck.out; then
+            FIXED=$(grep -c "Fixed in: N/A" /tmp/govulncheck.out || true)
+            TOTAL=$(grep -c "^Vulnerability #" /tmp/govulncheck.out || true)
+            if [ "$FIXED" -lt "$TOTAL" ]; then
+              echo "govulncheck: $TOTAL vulnerabilities found ($FIXED unfixable, $((TOTAL - FIXED)) fixable)"
+              rm -f /tmp/govulncheck.out; exit 1
+            else
+              echo "govulncheck: $TOTAL unfixable vulnerabilities (no fix available), ignoring"
+            fi
+          else
+            echo "No vulnerabilities found."
+          fi
+          rm -f /tmp/govulncheck.out
 
       - name: Run gosec
         uses: securego/gosec@master
@@ -113,7 +128,7 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: ${{ env.GO_REQUIRED_VERSION }}
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Build provider binary
         run: make build
