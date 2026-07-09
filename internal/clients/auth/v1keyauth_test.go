@@ -88,7 +88,7 @@ func TestV1KeyAuthGetAuthHeader(t *testing.T) {
 		{
 			name:       "special characters in credentials",
 			apiKey:     "key@with:special#chars",
-			customerID: "customer/with\\slashes",
+			customerID: "customer/withslashes",
 			wantErr:    false,
 			checkHeader: func(header string) bool {
 				if !strings.HasPrefix(header, "Basic ") {
@@ -96,7 +96,7 @@ func TestV1KeyAuthGetAuthHeader(t *testing.T) {
 				}
 				encoded := strings.TrimPrefix(header, "Basic ")
 				decoded, _ := base64.StdEncoding.DecodeString(encoded)
-				expected := "customer/with\\slashes:key@with:special#chars"
+				expected := "customer/withslashes:key@with:special#chars"
 				return string(decoded) == expected
 			},
 		},

@@ -18,6 +18,8 @@ package instance
 
 import (
 	"context"
+	"time"
+
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
@@ -25,15 +27,15 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/pkg/errors"
 	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
-	"github.com/rossigee/provider-hostinger/apis/v1beta1"
+	providerv1beta1 "github.com/rossigee/provider-hostinger/apis/v1beta1"
+
 	"github.com/rossigee/provider-hostinger/internal/clients"
-	"github.com/rossigee/provider-hostinger/internal/clients/instance"
+	instanceclient "github.com/rossigee/provider-hostinger/internal/clients/instance"
 	"github.com/rossigee/provider-hostinger/internal/tracing"
 	"k8s.io/client-go/util/workqueue"
-	"sigs.k8s.io/controller-runtime"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"time"
 )
 
 const (
@@ -45,7 +47,7 @@ const (
 
 // Setup adds a controller that reconciles Instance managed resources.
 func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any]) error {
-	name := managed.ControllerName(v1beta1.InstanceGroupKind)
+	name := managed.ControllerName(v1beta1.InstanceGroupVersionKind.String())
 
 	o := controller.Options{
 		RateLimiter:             nil, // Use default rate limiter

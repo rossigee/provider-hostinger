@@ -19,9 +19,10 @@ package instance
 import (
 	"context"
 	"fmt"
-	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
-	"github.com/rossigee/provider-hostinger/internal/clients/instance"
 	"testing"
+
+	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
+	instanceclient "github.com/rossigee/provider-hostinger/internal/clients/instance"
 )
 
 // MockHostingerClient is a mock implementation of the Hostinger client
@@ -32,7 +33,7 @@ type MockHostingerClient struct {
 type MockInstanceClient struct {
 }
 
-func (m *MockInstanceClient) Create(ctx context.Context, params *instanceapi.InstanceParameters) (*instanceclient.Instance, error) {
+func (m *MockInstanceClient) Create(ctx context.Context, params *v1beta1.InstanceParameters) (*instanceclient.Instance, error) {
 	return &instanceclient.Instance{
 		ID:       "mock-instance-123",
 		Hostname: params.Hostname,
@@ -51,7 +52,7 @@ func (m *MockInstanceClient) Get(ctx context.Context, instanceID string) (*insta
 	}, nil
 }
 
-func (m *MockInstanceClient) Update(ctx context.Context, instanceID string, params *instanceapi.InstanceParameters) error {
+func (m *MockInstanceClient) Update(ctx context.Context, instanceID string, params *v1beta1.InstanceParameters) error {
 	if instanceID == "" {
 		return fmt.Errorf("instance ID cannot be empty")
 	}
@@ -69,22 +70,22 @@ func (m *MockInstanceClient) List(ctx context.Context) ([]*instanceclient.Instan
 	return nil, nil
 }
 
-func (m *MockInstanceClient) GetObservation(instance *instanceclient.Instance) *instanceapi.InstanceObservation {
+func (m *MockInstanceClient) GetObservation(instance *instanceclient.Instance) *v1beta1.InstanceObservation {
 	if instance == nil {
-		return &instanceapi.InstanceObservation{}
+		return &v1beta1.InstanceObservation{}
 	}
-	return &instanceapi.InstanceObservation{
+	return &v1beta1.InstanceObservation{
 		ID:              instance.ID,
 		Status:          instance.Status,
 		CurrentHostname: instance.Hostname,
 	}
 }
 
-func (m *MockInstanceClient) LateInitialize(instance *instanceclient.Instance, params *instanceapi.InstanceParameters) bool {
+func (m *MockInstanceClient) LateInitialize(instance *instanceclient.Instance, params *v1beta1.InstanceParameters) bool {
 	return false
 }
 
-func (m *MockInstanceClient) UpToDate(instance *instanceclient.Instance, params *instanceapi.InstanceParameters) bool {
+func (m *MockInstanceClient) UpToDate(instance *instanceclient.Instance, params *v1beta1.InstanceParameters) bool {
 	return true
 }
 

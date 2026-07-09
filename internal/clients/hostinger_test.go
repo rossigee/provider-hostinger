@@ -18,13 +18,14 @@ package clients
 
 import (
 	"context"
-	"github.com/rossigee/provider-hostinger/apis/v1beta1"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/rossigee/provider-hostinger/apis/v1beta1"
 )
 
 // MockAuthenticator is a mock implementation of auth.Authenticator

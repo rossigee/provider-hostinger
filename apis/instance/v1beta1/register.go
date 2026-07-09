@@ -1,5 +1,5 @@
 /*
-Copyright 2025 Ross Golder.
+Copyright 2025 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,20 +17,15 @@ limitations under the License.
 package v1beta1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-
-const (
-	// InstanceKind is the kind of Instance resource.
-	InstanceKind = "Instance"
-)
-
+// Instance type metadata.
 var (
-	// InstanceGroupKind is the GroupKind for Instance resources.
-	InstanceGroupKind = schema.GroupKind{Group: Group, Kind: InstanceKind}.String()
-
-	// InstanceGroupVersionKind is the GroupVersionKind for Instance resources.
+	InstanceKind             = reflect.TypeOf(Instance{}).Name()
+	InstanceGroupKind        = schema.GroupKind{Group: Group, Kind: InstanceKind}
+	InstanceKindAPIVersion   = InstanceKind + "." + SchemeGroupVersion.String()
 	InstanceGroupVersionKind = SchemeGroupVersion.WithKind(InstanceKind)
 )
-}

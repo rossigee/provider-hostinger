@@ -17,11 +17,12 @@ limitations under the License.
 package apis
 
 import (
-	"github.com/rossigee/provider-hostinger/apis/backup/v1beta1"
-	"github.com/rossigee/provider-hostinger/apis/firewall/v1beta1"
-	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
-	"github.com/rossigee/provider-hostinger/apis/sshkey/v1beta1"
+	backupv1beta1 "github.com/rossigee/provider-hostinger/apis/backup/v1beta1"
+	firewallv1beta1 "github.com/rossigee/provider-hostinger/apis/firewall/v1beta1"
+	instancev1beta1 "github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
+	sshkeyv1beta1 "github.com/rossigee/provider-hostinger/apis/sshkey/v1beta1"
 	"github.com/rossigee/provider-hostinger/apis/v1beta1"
+
 	"k8s.io/apimachinery/pkg/runtime"
 )
 

@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
 	"github.com/rossigee/provider-hostinger/internal/clients"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"time"
 )
 
