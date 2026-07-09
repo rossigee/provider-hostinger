@@ -76,10 +76,11 @@ jobs:
           push: true
 
       - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v2
         with:
           tag: ${{ steps.version.outputs.version }}
           name: Release ${{ steps.version.outputs.version }}
+          allowUpdates: true
           body: |
             ## Provider Image
             Published to: `${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }}`
@@ -90,6 +91,7 @@ jobs:
             apiVersion: pkg.crossplane.io/v1
             kind: Provider
             metadata:
+        allowUpdates: true
               name: provider-hostinger
             spec:
               package: ${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }}
