@@ -27,3 +27,4 @@ TEST_COVERAGE.md
 # Local environment
 .env
 .env.local
+vendor/
