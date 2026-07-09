@@ -18,7 +18,7 @@ jobs:
   release:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: true
           fetch-depth: 0
@@ -63,7 +63,7 @@ jobs:
           make build PLATFORMS="linux_amd64" VERSION=${{ steps.version.outputs.version }}
 
       - name: Build and push Docker image (amd64)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./cluster/images/provider-hostinger/Dockerfile
