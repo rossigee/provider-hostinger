@@ -9,7 +9,7 @@ metadata:
     meta.crossplane.io/description: |
       Crossplane provider for managing Hostinger VPS and cloud services
 spec:
-  controller:
-    permissionRequests: []
+  permissionRequests: []
+  controller: {}
   crossplane:
     version: ">=v2.0.0"
