@@ -24,6 +24,8 @@ import (
 	"github.com/rossigee/provider-hostinger/internal/tracing"
 	"github.com/rossigee/provider-hostinger/internal/version"
 	"gopkg.in/alecthomas/kingpin.v2"
+	apimachineryruntime "k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/util/workqueue"
 	"os"
 	"path/filepath"
@@ -50,7 +52,6 @@ func main() {
 
 	// Always set the controller-runtime logger to prevent logging errors
 	ctrl.SetLogger(zl)
-	}
 
 	log.Info("Provider starting up",
 		"provider", "provider-hostinger",
@@ -62,19 +63,21 @@ func main() {
 		"leader-election-id", "crossplane-leader-election-provider-hostinger",
 		"debug-mode", *debug)
 
+	s := apimachineryruntime.NewScheme()
+	kingpin.FatalIfError(scheme.AddToScheme(s), "Cannot add k8s types to scheme")
+	kingpin.FatalIfError(apis.AddToScheme(s), "Cannot add Hostinger APIs to scheme")
+
 	cfg, err := ctrl.GetConfig()
 	kingpin.FatalIfError(err, "Cannot get API server rest config")
 
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
+		Scheme:             s,
 		LeaderElection:   *leaderElection,
 		LeaderElectionID: "crossplane-leader-election-provider-hostinger",
 	})
 	kingpin.FatalIfError(err, "Cannot create controller manager")
 
 	rl := workqueue.DefaultTypedControllerRateLimiter[any]()
-	log.Info("Adding Hostinger APIs to scheme")
-	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add Hostinger APIs to scheme")
-	log.Info("Hostinger APIs added to scheme successfully")
 	kingpin.FatalIfError(controller.Setup(mgr, log, rl), "Cannot setup Hostinger controllers")
 
 	kingpin.FatalIfError(mgr.AddHealthzCheck("healthz", healthz.Ping), "Cannot add health check")

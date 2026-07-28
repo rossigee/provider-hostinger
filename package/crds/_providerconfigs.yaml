@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: providerconfigs.
+  name: providerconfigs.hostinger.crossplane.io
 spec:
-  group: ""
+  group: hostinger.crossplane.io
   names:
     kind: ProviderConfig
     listKind: ProviderConfigList
@@ -21,7 +21,7 @@ spec:
     - jsonPath: .status.conditions[?(@.type=='Ready')].status
       name: READY
       type: string
-    name: ""
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: ProviderConfig is the CRD type for Hostinger API provider configurations.
