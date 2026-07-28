@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: instances
+  name: sshkeys.sshkey.m.hostinger.crossplane.io
 spec:
-  group: ""
+  group: sshkey.m.hostinger.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - hostinger
-    kind: Instance
-    listKind: InstanceList
-    plural: instances
-    singular: instance
+    kind: SSHKey
+    listKind: SSHKeyList
+    plural: sshkeys
+    singular: sshkey
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -28,10 +28,10 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: ""
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: Instance is the CRD type for Hostinger VPS instances.
+        description: SSHKey is the CRD type for Hostinger SSH keys.
         properties:
           apiVersion:
             description: |-
@@ -51,8 +51,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: InstanceSpec defines the desired state of a Hostinger VPS
-              Instance.
+            description: SSHKeySpec defines the desired state of a Hostinger SSH Key.
             properties:
               deletionPolicy:
                 default: Delete
@@ -69,45 +68,23 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: InstanceParameters are the configurable fields of a Hostinger
-                  VPS Instance.
+                description: SSHKeyParameters are the configurable fields of a Hostinger
+                  SSH Key.
                 properties:
-                  bandwidth:
-                    description: Bandwidth is the bandwidth in GB/month.
-                    format: int32
-                    type: integer
-                  cpuCount:
-                    description: CPUCount is the number of CPU cores.
-                    format: int32
-                    minimum: 1
-                    type: integer
-                  diskSize:
-                    description: DiskSize is the disk size in GB.
-                    format: int32
-                    minimum: 10
-                    type: integer
-                  hostname:
-                    description: Hostname is the hostname for the VPS instance.
+                  instanceIds:
+                    description: InstanceIDs are the instance IDs to attach this SSH
+                      key to.
+                    items:
+                      type: string
+                    type: array
+                  name:
+                    description: Name is the name/label for the SSH key.
                     minLength: 1
                     type: string
-                  inodes:
-                    description: Inodes is the number of inodes.
-                    format: int32
-                    type: integer
-                  ipv6Enabled:
-                    description: IPv6Enabled specifies whether IPv6 should be enabled.
-                    type: boolean
-                  osId:
-                    description: OSId is the operating system ID/template to use.
-                    type: string
-                  ram:
-                    description: RAM is the amount of RAM in MB.
-                    format: int32
-                    minimum: 512
-                    type: integer
-                  rootPasswordSecretRef:
-                    description: RootPasswordSecretRef is a reference to a secret
-                      containing the root password.
+                  publicKeySecretRef:
+                    description: |-
+                      PublicKeySecretRef is a reference to a secret containing the public key.
+                      The secret key should be "public-key".
                     properties:
                       key:
                         description: The key to select.
@@ -124,11 +101,8 @@ spec:
                     - namespace
                     type: object
                 required:
-                - cpuCount
-                - diskSize
-                - hostname
-                - osId
-                - ram
+                - name
+                - publicKeySecretRef
                 type: object
               managementPolicies:
                 default:
@@ -217,49 +191,31 @@ spec:
             - forProvider
             type: object
           status:
-            description: InstanceStatus defines the observed state of a Hostinger
-              VPS Instance.
+            description: SSHKeyStatus defines the observed state of a Hostinger SSH
+              Key.
             properties:
               atProvider:
-                description: InstanceObservation are the observable fields of a Hostinger
-                  VPS Instance.
+                description: SSHKeyObservation are the observable fields of a Hostinger
+                  SSH Key.
                 properties:
-                  creationDate:
-                    description: CreationDate is when the instance was created.
+                  attachedInstances:
+                    description: AttachedInstances is the list of instance IDs this
+                      key is attached to.
+                    items:
+                      type: string
+                    type: array
+                  createdDate:
+                    description: CreatedDate is when the SSH key was created.
                     format: date-time
                     type: string
-                  currentCpuCount:
-                    description: CurrentCPUCount is the current CPU count.
-                    format: int32
-                    type: integer
-                  currentDiskSize:
-                    description: CurrentDiskSize is the current disk size in GB.
-                    format: int32
-                    type: integer
-                  currentHostname:
-                    description: CurrentHostname is the current hostname set on the
-                      instance.
-                    type: string
-                  currentRam:
-                    description: CurrentRAM is the current RAM in MB.
-                    format: int32
-                    type: integer
-                  expirationDate:
-                    description: ExpirationDate is when the instance will expire.
-                    format: date-time
+                  fingerprint:
+                    description: Fingerprint is the SSH key fingerprint.
                     type: string
                   id:
-                    description: ID is the external resource ID.
+                    description: ID is the external SSH key resource ID.
                     type: string
-                  ipAddress:
-                    description: IPAddress is the primary IP address.
-                    type: string
-                  ipv6Address:
-                    description: IPv6Address is the IPv6 address if enabled.
-                    type: string
-                  status:
-                    description: Status is the current status of the instance (active,
-                      pending, suspended, etc.).
+                  publicKeyHash:
+                    description: PublicKeyHash is a hash of the public key content.
                     type: string
                 type: object
               conditions:

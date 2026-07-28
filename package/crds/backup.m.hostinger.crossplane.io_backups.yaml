@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: backups
+  name: backups.backup.m.hostinger.crossplane.io
 spec:
-  group: ""
+  group: backup.m.hostinger.crossplane.io
   names:
     categories:
     - crossplane
@@ -28,7 +28,7 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: ""
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: Backup is the CRD type for Hostinger VPS backups.

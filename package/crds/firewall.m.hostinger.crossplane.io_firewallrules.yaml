@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: sshkeys
+  name: firewallrules.firewall.m.hostinger.crossplane.io
 spec:
-  group: ""
+  group: firewall.m.hostinger.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - hostinger
-    kind: SSHKey
-    listKind: SSHKeyList
-    plural: sshkeys
-    singular: sshkey
+    kind: FirewallRule
+    listKind: FirewallRuleList
+    plural: firewallrules
+    singular: firewallrule
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -28,10 +28,10 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: AGE
       type: date
-    name: ""
+    name: v1beta1
     schema:
       openAPIV3Schema:
-        description: SSHKey is the CRD type for Hostinger SSH keys.
+        description: FirewallRule is the CRD type for Hostinger firewall rules.
         properties:
           apiVersion:
             description: |-
@@ -51,7 +51,8 @@ spec:
           metadata:
             type: object
           spec:
-            description: SSHKeySpec defines the desired state of a Hostinger SSH Key.
+            description: FirewallRuleSpec defines the desired state of a Hostinger
+              Firewall Rule.
             properties:
               deletionPolicy:
                 default: Delete
@@ -68,41 +69,64 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: SSHKeyParameters are the configurable fields of a Hostinger
-                  SSH Key.
+                description: FirewallRuleParameters are the configurable fields of
+                  a Hostinger Firewall Rule.
                 properties:
-                  instanceIds:
-                    description: InstanceIDs are the instance IDs to attach this SSH
-                      key to.
-                    items:
-                      type: string
-                    type: array
-                  name:
-                    description: Name is the name/label for the SSH key.
+                  defaultAction:
+                    description: DefaultAction is the default action for traffic not
+                      matching any rules.
+                    enum:
+                    - allow
+                    - deny
+                    type: string
+                  instanceId:
+                    description: InstanceID is the ID of the VPS instance to configure
+                      firewall for.
                     minLength: 1
                     type: string
-                  publicKeySecretRef:
-                    description: |-
-                      PublicKeySecretRef is a reference to a secret containing the public key.
-                      The secret key should be "public-key".
-                    properties:
-                      key:
-                        description: The key to select.
-                        type: string
-                      name:
-                        description: Name of the secret.
-                        type: string
-                      namespace:
-                        description: Namespace of the secret.
-                        type: string
-                    required:
-                    - key
-                    - name
-                    - namespace
-                    type: object
+                  rules:
+                    description: Rules is the list of firewall rules.
+                    items:
+                      description: FirewallRuleSpec represents a single firewall rule
+                      properties:
+                        action:
+                          description: Action is the action for matching traffic.
+                          enum:
+                          - allow
+                          - deny
+                          type: string
+                        destination:
+                          description: Destination is the destination IP/CIDR for
+                            outbound rules.
+                          type: string
+                        direction:
+                          description: Direction is the traffic direction.
+                          enum:
+                          - inbound
+                          - outbound
+                          type: string
+                        port:
+                          description: Port is the port number or port range (e.g.,
+                            "80" or "8000-9000").
+                          type: string
+                        protocol:
+                          description: Protocol is the network protocol.
+                          enum:
+                          - tcp
+                          - udp
+                          - icmp
+                          type: string
+                        source:
+                          description: Source is the source IP/CIDR for inbound rules.
+                          type: string
+                      required:
+                      - direction
+                      - port
+                      - protocol
+                      type: object
+                    type: array
                 required:
-                - name
-                - publicKeySecretRef
+                - instanceId
                 type: object
               managementPolicies:
                 default:
@@ -191,31 +215,34 @@ spec:
             - forProvider
             type: object
           status:
-            description: SSHKeyStatus defines the observed state of a Hostinger SSH
-              Key.
+            description: FirewallRuleStatus defines the observed state of a Hostinger
+              Firewall Rule.
             properties:
               atProvider:
-                description: SSHKeyObservation are the observable fields of a Hostinger
-                  SSH Key.
+                description: FirewallRuleObservation are the observable fields of
+                  a Hostinger Firewall Rule.
                 properties:
-                  attachedInstances:
-                    description: AttachedInstances is the list of instance IDs this
-                      key is attached to.
-                    items:
-                      type: string
-                    type: array
-                  createdDate:
-                    description: CreatedDate is when the SSH key was created.
+                  appliedDate:
+                    description: AppliedDate is when the firewall rules were last
+                      applied.
                     format: date-time
                     type: string
-                  fingerprint:
-                    description: Fingerprint is the SSH key fingerprint.
+                  currentDefaultAction:
+                    description: CurrentDefaultAction is the current default action.
+                    enum:
+                    - allow
+                    - deny
                     type: string
                   id:
-                    description: ID is the external SSH key resource ID.
+                    description: ID is the external firewall configuration ID.
                     type: string
-                  publicKeyHash:
-                    description: PublicKeyHash is a hash of the public key content.
+                  ruleCount:
+                    description: RuleCount is the number of active rules.
+                    format: int32
+                    type: integer
+                  status:
+                    description: Status is the current status of the firewall (active,
+                      pending, etc.).
                     type: string
                 type: object
               conditions:
