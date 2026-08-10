@@ -115,4 +115,4 @@ require (
 
 replace golang.org/x/net v0.46.0 => golang.org/x/net v0.33.0
 
-replace github.com/crossplane/crossplane-runtime/v2 => github.com/rossigee/crossplane-runtime/v2 v2.4.0-rc.0.0.20260726062756-089a6b3db2f8
+replace github.com/crossplane/crossplane-runtime/v2 => github.com/rossigee/crossplane-runtime/v2 v2.4.0-rc.0.0.20260809105910-863d0d0c54e8

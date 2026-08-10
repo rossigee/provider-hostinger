@@ -34,7 +34,7 @@ A Crossplane provider for managing Hostinger VPS and cloud services.
 ✅ **Kubernetes-Native** - Manage cloud infrastructure as Kubernetes resources
 ✅ **GitOps Ready** - Works seamlessly with Flux, ArgoCD, and other GitOps tools
 
-## Installation
+## Getting Started
 
 ### Prerequisites
 
@@ -254,7 +254,7 @@ spec:
   deletionPolicy: Delete
 ```
 
-## API Resources
+## Resource Types
 
 ### ProviderConfig
 
