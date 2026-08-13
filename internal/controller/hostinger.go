@@ -103,6 +103,29 @@ func setupRBAC(c client.Client, l logging.Logger) error {
 		l.Info("system role update", "err", err)
 	}
 
+	// Ensure binding so the SA gets the permissions from the system role we manage.
+	binding := &rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "crossplane:provider:provider-hostinger:system",
+		},
+		RoleRef: rbacv1.RoleRef{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind:     "ClusterRole",
+			Name:     "crossplane:provider:provider-hostinger:system",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind:      "ServiceAccount",
+			Name:      "provider-hostinger",
+			Namespace: "crossplane-system",
+		}},
+	}
+	if err := c.Create(ctx, binding); err != nil && !errors.IsAlreadyExists(err) {
+		return err
+	}
+	if err := c.Update(ctx, binding); err != nil {
+		l.Info("system binding update", "err", err)
+	}
+
 	// Aggregate edit
 	edit := &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{
@@ -117,7 +140,7 @@ func setupRBAC(c client.Client, l logging.Logger) error {
 		Rules: withVerbs(rules, []string{"*"}),
 	}
 	if err := c.Create(ctx, edit); err != nil && !errors.IsAlreadyExists(err) {
-		return err
+		l.Info("aggregate-to-edit create warning (non-fatal)", "err", err)
 	}
 	_ = c.Update(ctx, edit)
 
@@ -133,7 +156,7 @@ func setupRBAC(c client.Client, l logging.Logger) error {
 		Rules: withVerbs(rules, []string{"get", "list", "watch"}),
 	}
 	if err := c.Create(ctx, view); err != nil && !errors.IsAlreadyExists(err) {
-		return err
+		l.Info("aggregate-to-view create warning (non-fatal)", "err", err)
 	}
 	_ = c.Update(ctx, view)
 
