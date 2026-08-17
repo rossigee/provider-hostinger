@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"os"
 
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/rossigee/provider-hostinger/internal/controller/instance"
@@ -115,7 +116,7 @@ func setupRBAC(c client.Client, l logging.Logger) error {
 		},
 		Subjects: []rbacv1.Subject{{
 			Kind:      "ServiceAccount",
-			Name:      "provider-hostinger",
+			Name:      os.Getenv("REVISION_NAME"),
 			Namespace: "crossplane-system",
 		}},
 	}
