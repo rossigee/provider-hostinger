@@ -16,7 +16,7 @@ permissions:
 env:
   REGISTRY_ORGS: ghcr.io/rossigee
   CROSSPLANE_VERSION: v2.0.2
-  GO_VERSION: '1.26.5'
+  GO_VERSION: '1.26.6'
 
 jobs:
   lint:
