@@ -19,10 +19,11 @@ package instance
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
 	"github.com/rossigee/provider-hostinger/internal/clients"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"time"
 )
 
 // Instance represents a Hostinger VPS instance

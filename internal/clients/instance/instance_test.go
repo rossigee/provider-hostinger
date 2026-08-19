@@ -18,10 +18,11 @@ package instance
 
 import (
 	"context"
-	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
-	"github.com/rossigee/provider-hostinger/internal/clients"
 	"testing"
 	"time"
+
+	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
+	"github.com/rossigee/provider-hostinger/internal/clients"
 )
 
 func TestNewInstanceClient(t *testing.T) {

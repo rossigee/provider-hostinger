@@ -18,6 +18,10 @@ package main
 
 import (
 	"context"
+	"os"
+	"path/filepath"
+	"runtime"
+
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/rossigee/provider-hostinger/apis"
 	"github.com/rossigee/provider-hostinger/internal/controller"
@@ -27,9 +31,6 @@ import (
 	apimachineryruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/util/workqueue"
-	"os"
-	"path/filepath"
-	"runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
