@@ -436,3 +436,7 @@ For security vulnerabilities, please email security@golder.tech instead of using
 - [Crossplane Documentation](https://docs.crossplane.io/)
 - [Hostinger API Documentation](https://docs.hostinger.com/)
 - [Crossplane Provider Development](https://docs.crossplane.io/v1.15/guides/provider-development/)
+
+## Implementation
+
+This provider is a native Crossplane controller that directly implements the provider APIs without using Terraform or upjet scaffolding. This approach yields smaller binaries, simpler code, and reduced dependencies.
