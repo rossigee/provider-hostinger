@@ -27,11 +27,11 @@ import (
 	"github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
 	providerv1beta1 "github.com/rossigee/provider-hostinger/apis/v1beta1"
 
+	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/rossigee/provider-hostinger/internal/clients"
 	instanceclient "github.com/rossigee/provider-hostinger/internal/clients/instance"
 	"github.com/rossigee/provider-hostinger/internal/features"
 	"github.com/rossigee/provider-hostinger/internal/tracing"
-	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
