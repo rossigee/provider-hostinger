@@ -22,7 +22,10 @@ import (
 	"path/filepath"
 	"runtime"
 
+	xpcontroller "github.com/crossplane/crossplane-runtime/v2/pkg/controller"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/feature"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/statemetrics"
 	"github.com/rossigee/provider-hostinger/apis"
 	backupv1beta1 "github.com/rossigee/provider-hostinger/apis/backup/v1beta1"
@@ -30,12 +33,12 @@ import (
 	instancev1beta1 "github.com/rossigee/provider-hostinger/apis/instance/v1beta1"
 	sshkeyv1beta1 "github.com/rossigee/provider-hostinger/apis/sshkey/v1beta1"
 	"github.com/rossigee/provider-hostinger/internal/controller"
+	"github.com/rossigee/provider-hostinger/internal/features"
 	"github.com/rossigee/provider-hostinger/internal/tracing"
 	"github.com/rossigee/provider-hostinger/internal/version"
 	"gopkg.in/alecthomas/kingpin.v2"
 	apimachineryruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -45,12 +48,15 @@ import (
 
 func main() {
 	var (
-		app                     = kingpin.New(filepath.Base(os.Args[0]), "Hostinger VPS support for Crossplane.").DefaultEnvars()
-		debug                   = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
-		syncPeriod              = app.Flag("sync", "Controller manager sync period such as 300ms, 1.5h, or 2h45m").Short('s').Default("1h").Duration()
-		leaderElection          = app.Flag("leader-election", "Use leader election for the controller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
-		pollStateMetricInterval = app.Flag("poll-state-metric", "State metric recording interval").Default("5s").Duration()
-		metricsBindAddress      = app.Flag("metrics-bind-address", "The address the metrics endpoint binds to.").Default(":8080").String()
+		app                      = kingpin.New(filepath.Base(os.Args[0]), "Hostinger VPS support for Crossplane.").DefaultEnvars()
+		debug                    = app.Flag("debug", "Run with debug logging.").Short('d').Bool()
+		syncPeriod               = app.Flag("sync", "Controller manager sync period such as 300ms, 1.5h, or 2h45m").Short('s').Default("1h").Duration()
+		leaderElection           = app.Flag("leader-election", "Use leader election for the controller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
+		pollInterval             = app.Flag("poll", "Poll interval controls how often an individual resource should be checked for drift.").Default("1m").Duration()
+		maxReconcileRate         = app.Flag("max-reconcile-rate", "The global maximum rate per second at which resources may be checked for drift.").Default("10").Int()
+		pollStateMetricInterval  = app.Flag("poll-state-metric", "State metric recording interval").Default("5s").Duration()
+		metricsBindAddress       = app.Flag("metrics-bind-address", "The address the metrics endpoint binds to.").Default(":8080").String()
+		enableManagementPolicies = app.Flag("enable-management-policies", "Enable support for management policies.").Default("true").Envar("ENABLE_MANAGEMENT_POLICIES").Bool()
 	)
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
@@ -69,8 +75,11 @@ func main() {
 		"go-version", runtime.Version(),
 		"platform", runtime.GOOS+"/"+runtime.GOARCH,
 		"sync-period", syncPeriod.String(),
+		"poll-interval", pollInterval.String(),
+		"max-reconcile-rate", *maxReconcileRate,
 		"leader-election", *leaderElection,
 		"leader-election-id", "crossplane-leader-election-provider-hostinger",
+		"management-policies", *enableManagementPolicies,
 		"debug-mode", *debug)
 
 	s := apimachineryruntime.NewScheme()
@@ -93,13 +102,32 @@ func main() {
 	mrStateMetrics := statemetrics.NewMRStateMetrics()
 	metrics.Registry.MustRegister(mrStateMetrics)
 
-	rl := workqueue.DefaultTypedControllerRateLimiter[any]()
-	kingpin.FatalIfError(controller.Setup(mgr, log, rl), "Cannot setup Hostinger controllers")
+	mo := xpcontroller.MetricOptions{
+		PollStateMetricInterval: *pollStateMetricInterval,
+		MRStateMetrics:          mrStateMetrics,
+	}
 
-	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &instancev1beta1.InstanceList{}, *pollStateMetricInterval)), "Cannot register state metrics for Instance")
-	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &sshkeyv1beta1.SSHKeyList{}, *pollStateMetricInterval)), "Cannot register state metrics for SSHKey")
-	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &backupv1beta1.BackupList{}, *pollStateMetricInterval)), "Cannot register state metrics for Backup")
-	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), log, mrStateMetrics, &firewallv1beta1.FirewallRuleList{}, *pollStateMetricInterval)), "Cannot register state metrics for FirewallRule")
+	featureFlags := &feature.Flags{}
+	if *enableManagementPolicies {
+		featureFlags.Enable(features.EnableAlphaManagementPolicies)
+		log.Info("Alpha feature enabled", "flag", features.EnableAlphaManagementPolicies)
+	}
+
+	o := xpcontroller.Options{
+		Logger:                  log,
+		MaxConcurrentReconciles: *maxReconcileRate,
+		PollInterval:            *pollInterval,
+		GlobalRateLimiter:       ratelimiter.NewGlobal(*maxReconcileRate),
+		Features:                featureFlags,
+		MetricOptions:           &mo,
+	}
+
+	kingpin.FatalIfError(controller.Setup(mgr, o), "Cannot setup Hostinger controllers")
+
+	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), o.Logger, o.MetricOptions.MRStateMetrics, &instancev1beta1.InstanceList{}, o.MetricOptions.PollStateMetricInterval)), "Cannot register state metrics for Instance")
+	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), o.Logger, o.MetricOptions.MRStateMetrics, &sshkeyv1beta1.SSHKeyList{}, o.MetricOptions.PollStateMetricInterval)), "Cannot register state metrics for SSHKey")
+	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), o.Logger, o.MetricOptions.MRStateMetrics, &backupv1beta1.BackupList{}, o.MetricOptions.PollStateMetricInterval)), "Cannot register state metrics for Backup")
+	kingpin.FatalIfError(mgr.Add(statemetrics.NewMRStateRecorder(mgr.GetClient(), o.Logger, o.MetricOptions.MRStateMetrics, &firewallv1beta1.FirewallRuleList{}, o.MetricOptions.PollStateMetricInterval)), "Cannot register state metrics for FirewallRule")
 
 	kingpin.FatalIfError(mgr.AddHealthzCheck("healthz", healthz.Ping), "Cannot add health check")
 	kingpin.FatalIfError(mgr.AddReadyzCheck("readyz", healthz.Ping), "Cannot add ready check")

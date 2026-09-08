@@ -18,11 +18,9 @@ package instance
 
 import (
 	"context"
-	"time"
 
+	xpcontroller "github.com/crossplane/crossplane-runtime/v2/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/event"
-	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
-	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"github.com/pkg/errors"
@@ -31,8 +29,9 @@ import (
 
 	"github.com/rossigee/provider-hostinger/internal/clients"
 	instanceclient "github.com/rossigee/provider-hostinger/internal/clients/instance"
+	"github.com/rossigee/provider-hostinger/internal/features"
 	"github.com/rossigee/provider-hostinger/internal/tracing"
-	"k8s.io/client-go/util/workqueue"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -46,29 +45,34 @@ const (
 )
 
 // Setup adds a controller that reconciles Instance managed resources.
-func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any]) error {
+func Setup(mgr ctrl.Manager, o xpcontroller.Options) error {
 	name := managed.ControllerName(v1beta1.InstanceGroupVersionKind.String())
 
-	o := controller.Options{
-		RateLimiter:             nil, // Use default rate limiter
-		MaxConcurrentReconciles: 5,
-	}
-
-	r := managed.NewReconciler(mgr,
-		resource.ManagedKind(v1beta1.InstanceGroupVersionKind),
+	opts := []managed.ReconcilerOption{
 		managed.WithExternalConnector(&connector{
 			kube:        mgr.GetClient(),
 			newClientFn: clients.NewClientFactory,
 		}),
-		managed.WithLogger(l.WithValues("controller", name)),
+		managed.WithLogger(o.Logger.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorder(name))),
-		managed.WithPollInterval(5*time.Minute),
+		managed.WithPollInterval(o.PollInterval),
 		managed.WithInitializers(),
+	}
+	if o.Features.Enabled(features.EnableAlphaManagementPolicies) {
+		opts = append(opts, managed.WithManagementPolicies())
+	}
+	r := managed.NewReconciler(mgr,
+		resource.ManagedKind(v1beta1.InstanceGroupVersionKind),
+		opts...,
 	)
+
+	ctrlOpts := controller.Options{
+		MaxConcurrentReconciles: o.MaxConcurrentReconciles,
+	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		WithOptions(o).
+		WithOptions(ctrlOpts).
 		For(&v1beta1.Instance{}).
 		Complete(r)
 }

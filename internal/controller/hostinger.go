@@ -20,26 +20,26 @@ import (
 	"context"
 	"os"
 
+	xpcontroller "github.com/crossplane/crossplane-runtime/v2/pkg/controller"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/rossigee/provider-hostinger/internal/controller/instance"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // Setup registers all Hostinger provider controllers with the manager
-func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.TypedRateLimiter[any]) error {
+func Setup(mgr ctrl.Manager, o xpcontroller.Options) error {
 	// Providers MUST manage their RBAC during install/upgrade (and optionally removal).
 	// This eliminates the need for static per-revision bootstrap hacks in gitops
 	// (the ownerReferences pinning workarounds that caused double-controller conflicts
 	// and live patches).
-	if err := setupRBAC(mgr.GetClient(), l); err != nil {
-		l.Info("RBAC setup warning (may be transient)", "error", err)
+	if err := setupRBAC(mgr.GetClient(), o.Logger); err != nil {
+		o.Logger.Info("RBAC setup warning (may be transient)", "error", err)
 	}
-	return instance.Setup(mgr, l, wl)
+	return instance.Setup(mgr, o)
 }
 
 // setupRBAC ensures the provider's system, edit, and view ClusterRoles have the
