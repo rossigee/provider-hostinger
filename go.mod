@@ -3,7 +3,7 @@ module github.com/rossigee/provider-hostinger
 go 1.27.1
 
 require (
-	github.com/crossplane/crossplane-runtime/v2 v2.5.0-rc.0
+	github.com/crossplane/crossplane-runtime/v2 v2.5.0
 	github.com/crossplane/crossplane-tools v0.0.0-20260719180100-659f1dc036c5
 	github.com/crossplane/crossplane/apis/v2 v2.5.0-rc.0
 	github.com/pkg/errors v0.9.1
@@ -115,6 +115,6 @@ require (
 
 replace golang.org/x/net v0.46.0 => golang.org/x/net v0.33.0
 
-replace github.com/crossplane/crossplane-runtime/v2 => github.com/rossigee/crossplane-runtime/v2 v2.4.0-rc.0.0.20260823000123-e0887c52b0b9
+replace github.com/crossplane/crossplane-runtime/v2 => github.com/rossigee/crossplane-runtime/v2 v2.5.0
 
 replace github.com/crossplane/crossplane/apis/v2 => github.com/rossigee/crossplane/apis/v2 v2.0.0-20260823052155-23396e2cece7
