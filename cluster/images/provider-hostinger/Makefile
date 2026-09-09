@@ -22,7 +22,16 @@ BUILDARGS += --build-arg TARGETARCH=$(subst linux_,,$(PLATFORMS))
 
 # Build targets
 img.build:
-	@docker build $(BUILDARGS) -t $(IMAGE) -f Dockerfile ../../../
+	@$(MAKE) BUILDARGS="$(BUILDARGS)" img.build.shared
+
+img.build.shared:
+	@rm -rf $(IMAGE_TEMP_DIR)
+	@mkdir -p $(IMAGE_TEMP_DIR)
+	@cp Dockerfile $(IMAGE_TEMP_DIR)/
+	@cp -r ../../../_output/bin/ $(IMAGE_TEMP_DIR)/
+	@cp ../../../package/crossplane.yaml $(IMAGE_TEMP_DIR)/package.yaml
+	@cp -r ../../../package/crds $(IMAGE_TEMP_DIR)/crds
+	@docker buildx build $(BUILDARGS) --build-arg TARGETOS=linux --build-arg TARGETARCH=$(subst linux_,,$(PLATFORMS)) --load -t $(IMAGE) $(IMAGE_TEMP_DIR)
 
 img.publish:
 	@docker push $(IMAGE)
@@ -31,4 +40,6 @@ img.promote:
 	@docker tag $(FROM_IMAGE) $(TO_IMAGE)
 	@docker push $(TO_IMAGE)
 
-.PHONY: img.build img.publish img.promote
+.PHONY: img.build img.build.shared img.publish img.promote img.clean
+img.clean:
+	@rm -rf $(IMAGE_TEMP_DIR)
