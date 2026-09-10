@@ -62,6 +62,13 @@ jobs:
         run: |
           make build PLATFORMS="linux_amd64" VERSION=${{ steps.version.outputs.version }}
 
+      - name: Stage Docker build context
+        run: |
+          set -e
+          mkdir -p bin/linux_amd64
+          cp _output/bin/linux_amd64/provider bin/linux_amd64/provider
+          cp package/crossplane.yaml package.yaml
+
       - name: Build and push Docker image (amd64)
         uses: docker/build-push-action@v7
         with:

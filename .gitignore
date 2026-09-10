@@ -3,6 +3,7 @@ _output/
 bin/
 dist/
 *.xpkg
+/package.yaml
 
 # IDE
 .idea/
