@@ -1,45 +1,33 @@
-# Copyright 2025 Ross Golder. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# ====================================================================================
+# Setup Project
 
-# Image configuration
-PLATFORMS ?= linux_amd64
-IMAGE ?= localhost/provider-hostinger:latest
+PLATFORMS := linux_amd64 linux_arm64
+include ../../../build/makelib/common.mk
 
-# Docker build arguments
-BUILDARGS := --build-arg TARGETOS=linux
-BUILDARGS += --build-arg TARGETARCH=$(subst linux_,,$(PLATFORMS))
+# ====================================================================================
+# Options
+IMAGE ?= $(BUILD_REGISTRY)/provider-hostinger:$(VERSION)
+TARGETOS := $(word 1, $(subst _, ,$(PLATFORM)))
+include ../../../build/makelib/imagelight.mk
 
-# Build targets
+# ====================================================================================
+# Image Build
 img.build:
-	@$(MAKE) BUILDARGS="$(BUILDARGS)" img.build.shared
+	@$(INFO) docker build $(IMAGE)
+	@$(MAKE) -C ../../.. go.build PLATFORM=$(PLATFORM)
+	@$(MAKE) img.build.shared
+	@$(OK) docker build $(IMAGE)
 
 img.build.shared:
-	@rm -rf $(IMAGE_TEMP_DIR)
-	@mkdir -p $(IMAGE_TEMP_DIR)
-	@cp Dockerfile $(IMAGE_TEMP_DIR)/
-	@cp -r ../../../_output/bin/ $(IMAGE_TEMP_DIR)/
+	@cp Dockerfile $(IMAGE_TEMP_DIR)
+	@cp -r $(OUTPUT_DIR)/bin/ $(IMAGE_TEMP_DIR)/
 	@cp ../../../package/crossplane.yaml $(IMAGE_TEMP_DIR)/package.yaml
 	@cp -r ../../../package/crds $(IMAGE_TEMP_DIR)/crds
-	@docker buildx build $(BUILDARGS) --build-arg TARGETOS=linux --build-arg TARGETARCH=$(subst linux_,,$(PLATFORMS)) --load -t $(IMAGE) $(IMAGE_TEMP_DIR)
+	@docker build $(BUILD_ARGS) --build-arg TARGETOS=$(TARGETOS) --build-arg TARGETARCH=$(TARGETARCH) -t $(IMAGE) $(IMAGE_TEMP_DIR)
 
-img.publish:
+# ====================================================================================
+# Image Publish
+img.publish: img.build
+	@$(INFO) docker push $(IMAGE)
 	@docker push $(IMAGE)
-
-img.promote:
-	@docker tag $(FROM_IMAGE) $(TO_IMAGE)
-	@docker push $(TO_IMAGE)
-
-.PHONY: img.build img.build.shared img.publish img.promote img.clean
-img.clean:
-	@rm -rf $(IMAGE_TEMP_DIR)
+	@$(OK) docker push $(IMAGE)
