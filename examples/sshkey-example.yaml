@@ -44,7 +44,6 @@ spec:
     instanceIds:
       - "123456"
 
-  deletionPolicy: Delete
 
 ---
 # Multiple SSH keys for a single instance
@@ -71,7 +70,6 @@ spec:
       - "345678"  # Application server
 
   # Keep SSH key configuration even if resource is deleted
-  deletionPolicy: Orphan
 
 ---
 # Development SSH key
@@ -94,7 +92,6 @@ spec:
     instanceIds:
       - "901234"  # Dev environment
 
-  deletionPolicy: Delete
 
 ---
 # Automated deployment SSH key
@@ -119,4 +116,3 @@ spec:
       - "654321"  # Production web server
 
   # Keep key for continuous deployments
-  deletionPolicy: Orphan

@@ -25,7 +25,7 @@ import (
 
 const (
 	// Group is the API Group of all Hostinger resources.
-	Group = "hostinger.crossplane.io"
+	Group = "hostinger.m.crossplane.io"
 	// Version is the API version.
 	Version = "v1beta1"
 )

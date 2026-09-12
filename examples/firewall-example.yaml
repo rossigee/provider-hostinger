@@ -55,7 +55,6 @@ spec:
         action: allow
         source: "0.0.0.0/0"
 
-  deletionPolicy: Delete
 
 ---
 # Restrictive firewall example (production)
@@ -107,7 +106,6 @@ spec:
         action: allow
         destination: "0.0.0.0/0"
 
-  deletionPolicy: Orphan
 
 ---
 # Database server firewall rules
@@ -152,4 +150,3 @@ spec:
         direction: outbound
         action: allow
 
-  deletionPolicy: Orphan

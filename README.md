@@ -93,7 +93,7 @@ kubectl create secret generic hostinger-v2-credentials \
 #### For API v1 Key Authentication
 
 ```yaml
-apiVersion: hostinger.crossplane.io/v1beta1
+apiVersion: hostinger.m.crossplane.io/v1beta1
 kind: ProviderConfig
 metadata:
   name: default
@@ -113,7 +113,7 @@ spec:
 #### For API v2 OAuth Authentication
 
 ```yaml
-apiVersion: hostinger.crossplane.io/v1beta1
+apiVersion: hostinger.m.crossplane.io/v1beta1
 kind: ProviderConfig
 metadata:
   name: default
@@ -142,7 +142,7 @@ kubectl apply -f providerconfig.yaml
 ### Create a VPS Instance
 
 ```yaml
-apiVersion: instance.m.hostinger.crossplane.io/v1beta1
+apiVersion: instance.m.hostinger.m.crossplane.io/v1beta1
 kind: Instance
 metadata:
   name: my-vps
@@ -158,7 +158,6 @@ spec:
     diskSize: 50        # 50GB
     ipv6Enabled: true
     bandwidth: 1000
-  deletionPolicy: Delete
 ```
 
 Apply:
@@ -177,7 +176,7 @@ kubectl describe instance my-vps
 ### Configure Firewall Rules
 
 ```yaml
-apiVersion: firewall.m.hostinger.crossplane.io/v1beta1
+apiVersion: firewall.m.hostinger.m.crossplane.io/v1beta1
 kind: FirewallRule
 metadata:
   name: my-firewall
@@ -201,13 +200,12 @@ spec:
         protocol: tcp
         direction: inbound
         action: allow
-  deletionPolicy: Delete
 ```
 
 ### Schedule Backups
 
 ```yaml
-apiVersion: backup.m.hostinger.crossplane.io/v1beta1
+apiVersion: backup.m.hostinger.m.crossplane.io/v1beta1
 kind: Backup
 metadata:
   name: daily-backup
@@ -218,8 +216,7 @@ spec:
   forProvider:
     instanceId: "123456"
     description: "Daily backup"
-    schedule: daily
-  deletionPolicy: Orphan  # Keep backup if resource is deleted
+    schedule: daily  # Keep backup if resource is deleted
 ```
 
 ### Add SSH Keys
@@ -236,7 +233,7 @@ stringData:
     ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC... your-key-here
 
 ---
-apiVersion: sshkey.m.hostinger.crossplane.io/v1beta1
+apiVersion: sshkey.m.hostinger.m.crossplane.io/v1beta1
 kind: SSHKey
 metadata:
   name: my-ssh-key
@@ -251,7 +248,6 @@ spec:
       key: public-key
     instanceIds:
       - "123456"
-  deletionPolicy: Delete
 ```
 
 ## Resource Types
@@ -260,7 +256,7 @@ spec:
 
 Configuration for authenticating with Hostinger API.
 
-**API Group**: `hostinger.crossplane.io`
+**API Group**: `hostinger.m.crossplane.io/v1beta1`
 **Version**: `v1beta1`
 **Scope**: Cluster-scoped
 

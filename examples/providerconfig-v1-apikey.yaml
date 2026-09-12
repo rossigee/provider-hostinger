@@ -25,23 +25,22 @@ stringData:
 
 ---
 # Now create the ProviderConfig that references the secret
-apiVersion: hostinger.crossplane.io/v1beta1
+apiVersion: hostinger.m.crossplane.io/v1beta1
 kind: ProviderConfig
 metadata:
   name: hostinger-v1-default
   namespace: crossplane-system
 spec:
-  credentials:
-    apiKeyAuth:
-      # Endpoint is optional - defaults to https://api.hostinger.com/v1
-      endpoint: "https://api.hostinger.com/v1"
+  apiKeyAuth:
+    # Endpoint is optional - defaults to https://api.hostinger.com/v1
+    endpoint: "https://api.hostinger.com/v1"
 
-      # Reference to the secret containing your API key
-      apiKeySecretRef:
-        name: hostinger-v1-credentials
-        key: api-key
+    # Reference to the secret containing your API key
+    apiKeySecretRef:
+      name: hostinger-v1-credentials
+      key: api-key
 
-      # Reference to the secret containing your customer ID
-      customerIdSecretRef:
-        name: hostinger-v1-credentials
-        key: customer-id
+    # Reference to the secret containing your customer ID
+    customerIdSecretRef:
+      name: hostinger-v1-credentials
+      key: customer-id

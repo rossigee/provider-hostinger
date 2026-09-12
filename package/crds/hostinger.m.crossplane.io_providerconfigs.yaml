@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: providerconfigs.hostinger.crossplane.io
+  name: providerconfigs.hostinger.m.crossplane.io
 spec:
-  group: hostinger.crossplane.io
+  group: hostinger.m.crossplane.io
   names:
     kind: ProviderConfig
     listKind: ProviderConfigList

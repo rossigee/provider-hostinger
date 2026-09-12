@@ -26,26 +26,25 @@ stringData:
 
 ---
 # Now create the ProviderConfig that references the secret
-apiVersion: hostinger.crossplane.io/v1beta1
+apiVersion: hostinger.m.crossplane.io/v1beta1
 kind: ProviderConfig
 metadata:
   name: hostinger-v2-default
   namespace: crossplane-system
 spec:
-  credentials:
-    oauthAuth:
-      # Endpoint is optional - defaults to https://api.hostinger.com/v2
-      endpoint: "https://api.hostinger.com/v2"
+  oauthAuth:
+    # Endpoint is optional - defaults to https://api.hostinger.com/v2
+    endpoint: "https://api.hostinger.com/v2"
 
-      # Token endpoint is optional - defaults to https://auth.hostinger.com/oauth/token
-      tokenEndpoint: "https://auth.hostinger.com/oauth/token"
+    # Token endpoint is optional - defaults to https://auth.hostinger.com/oauth/token
+    tokenEndpoint: "https://auth.hostinger.com/oauth/token"
 
-      # Reference to the secret containing your client ID
-      clientIdSecretRef:
-        name: hostinger-v2-oauth-credentials
-        key: client-id
+    # Reference to the secret containing your client ID
+    clientIdSecretRef:
+      name: hostinger-v2-oauth-credentials
+      key: client-id
 
-      # Reference to the secret containing your client secret
-      clientSecretSecretRef:
-        name: hostinger-v2-oauth-credentials
-        key: client-secret
+    # Reference to the secret containing your client secret
+    clientSecretSecretRef:
+      name: hostinger-v2-oauth-credentials
+      key: client-secret

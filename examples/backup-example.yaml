@@ -29,7 +29,6 @@ spec:
     # For manual backups, this can be omitted or set to "manual"
     schedule: manual
 
-  deletionPolicy: Delete
 
 ---
 # Scheduled daily backup example
@@ -48,7 +47,6 @@ spec:
     schedule: daily
 
   # Keep backup schedule even if resource is deleted
-  deletionPolicy: Orphan
 
 ---
 # Weekly backup schedule example
@@ -66,7 +64,6 @@ spec:
     description: "Weekly backup of development environment"
     schedule: weekly
 
-  deletionPolicy: Delete
 
 ---
 # Monthly backup example
@@ -85,4 +82,3 @@ spec:
     schedule: monthly
 
   # Keep the backup even if the resource is deleted
-  deletionPolicy: Orphan
