@@ -17,10 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // SSHKeyParameters are the configurable fields of a Hostinger SSH Key.
@@ -61,7 +61,7 @@ type SSHKeyObservation struct {
 // SSHKeySpec defines the desired state of a Hostinger SSH Key.
 type SSHKeySpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     SSHKeyParameters `json:"forProvider"`
+	ForProvider              SSHKeyParameters `json:"forProvider"`
 }
 
 // SSHKeyStatus defines the observed state of a Hostinger SSH Key.
@@ -95,7 +95,6 @@ type SSHKeyList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []SSHKey `json:"items"`
 }
-
 
 // GetCondition gets the condition from the resource status.
 func (mg *SSHKey) GetCondition(ct xpv1.ConditionType) xpv1.Condition {

@@ -17,10 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // InstanceParameters are the configurable fields of a Hostinger VPS Instance.
@@ -102,7 +102,7 @@ type InstanceObservation struct {
 // InstanceSpec defines the desired state of a Hostinger VPS Instance.
 type InstanceSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     InstanceParameters `json:"forProvider"`
+	ForProvider              InstanceParameters `json:"forProvider"`
 }
 
 // InstanceStatus defines the observed state of a Hostinger VPS Instance.
@@ -136,7 +136,6 @@ type InstanceList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Instance `json:"items"`
 }
-
 
 // GetCondition gets the condition from the resource status.
 func (mg *Instance) GetCondition(ct xpv1.ConditionType) xpv1.Condition {

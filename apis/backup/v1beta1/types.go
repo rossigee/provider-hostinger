@@ -17,10 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // BackupScheduleType represents the backup schedule frequency
@@ -79,7 +79,7 @@ type BackupObservation struct {
 // BackupSpec defines the desired state of a Hostinger VPS Backup.
 type BackupSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     BackupParameters `json:"forProvider"`
+	ForProvider              BackupParameters `json:"forProvider"`
 }
 
 // BackupStatus defines the observed state of a Hostinger VPS Backup.
@@ -113,7 +113,6 @@ type BackupList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Backup `json:"items"`
 }
-
 
 // GetCondition gets the condition from the resource status.
 func (mg *Backup) GetCondition(ct xpv1.ConditionType) xpv1.Condition {

@@ -17,10 +17,10 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/apimachinery/pkg/runtime"
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // FirewallProtocol represents the network protocol
@@ -126,7 +126,7 @@ type FirewallRuleObservation struct {
 // FirewallRuleSpec defines the desired state of a Hostinger Firewall Rule.
 type FirewallSpec struct {
 	xpv1.ManagedResourceSpec `json:",inline"`
-	ForProvider                     FirewallRuleParameters `json:"forProvider"`
+	ForProvider              FirewallRuleParameters `json:"forProvider"`
 }
 
 // FirewallRuleStatus defines the observed state of a Hostinger Firewall Rule.
@@ -160,7 +160,6 @@ type FirewallRuleList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []FirewallRule `json:"items"`
 }
-
 
 // GetCondition gets the condition from the resource status.
 func (mg *FirewallRule) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
