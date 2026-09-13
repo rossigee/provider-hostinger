@@ -17,6 +17,8 @@ limitations under the License.
 package v1beta1
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -58,7 +60,7 @@ type SSHKeyObservation struct {
 
 // SSHKeySpec defines the desired state of a Hostinger SSH Key.
 type SSHKeySpec struct {
-	xpv1.ClusterManagedResourceSpec `json:",inline"`
+	xpv1.ManagedResourceSpec `json:",inline"`
 	ForProvider                     SSHKeyParameters `json:"forProvider"`
 }
 
@@ -92,4 +94,71 @@ type SSHKeyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []SSHKey `json:"items"`
+}
+
+
+// GetCondition gets the condition from the resource status.
+func (mg *SSHKey) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+	return mg.Status.GetCondition(ct)
+}
+
+// SetConditions sets the conditions on the resource status.
+func (mg *SSHKey) SetConditions(c ...xpv1.Condition) {
+	mg.Status.SetConditions(c...)
+}
+
+// GetManagementPolicies gets the management policies for the resource.
+func (mg *SSHKey) GetManagementPolicies() xpv1.ManagementPolicies {
+	return mg.Spec.ManagementPolicies
+}
+
+// SetManagementPolicies sets the management policies for the resource.
+func (mg *SSHKey) SetManagementPolicies(mp xpv1.ManagementPolicies) {
+	mg.Spec.ManagementPolicies = mp
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *SSHKey) DeepCopyObject() runtime.Object {
+	out := &SSHKey{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *SSHKey) DeepCopyInto(out *SSHKey) {
+	out.TypeMeta = in.TypeMeta
+	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
+	out.Spec = in.Spec
+	out.Status = in.Status
+}
+
+// GetProviderConfigReference returns the ProviderConfig reference.
+func (mg *SSHKey) GetProviderConfigReference() *xpv1.Reference {
+	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
+		return &xpv1.Reference{Name: mg.Spec.ProviderConfigReference.Name}
+	}
+	return nil
+}
+
+// GetItems returns the list items.
+func (l *SSHKeyList) GetItems() []resource.Managed {
+	items := make([]resource.Managed, len(l.Items))
+	for i := range l.Items {
+		items[i] = &l.Items[i]
+	}
+	return items
+}
+
+// DeepCopyObject returns a deep copy of this object as runtime.Object.
+func (in *SSHKeyList) DeepCopyObject() runtime.Object {
+	out := &SSHKeyList{}
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
+func (in *SSHKeyList) DeepCopyInto(out *SSHKeyList) {
+	out.TypeMeta = in.TypeMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
+	out.Items = append([]SSHKey(nil), in.Items...)
 }
