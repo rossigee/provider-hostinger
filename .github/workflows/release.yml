@@ -82,6 +82,25 @@ jobs:
             ${{ env.REGISTRY_ORGS }}/provider-hostinger:latest
           push: true
 
+      - name: Verify published artifacts
+        run: |
+          echo "Verifying published artifacts..."
+          docker pull ${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }} && echo "✓ Docker image published" || echo "✗ Docker image not found"
+          echo "Release complete: ${{ steps.version.outputs.version }}"
+
+  publish:
+    runs-on: ubuntu-24.04
+    needs: release
+    permissions:
+      contents: write
+
+    steps:
+      - name: Determine Version
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
@@ -90,9 +109,3 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
-
-      - name: Verify published artifacts
-        run: |
-          echo "Verifying published artifacts..."
-          docker pull ${{ env.REGISTRY_ORGS }}/provider-hostinger:${{ steps.version.outputs.version }} && echo "✓ Docker image published" || echo "✗ Docker image not found"
-          echo "Release complete: ${{ steps.version.outputs.version }}"
