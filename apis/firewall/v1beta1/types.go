@@ -20,7 +20,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // FirewallProtocol represents the network protocol
@@ -181,21 +180,6 @@ func (mg *FirewallRule) SetManagementPolicies(mp xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = mp
 }
 
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *FirewallRule) DeepCopyObject() runtime.Object {
-	out := &FirewallRule{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *FirewallRule) DeepCopyInto(out *FirewallRule) {
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
-	out.Status = in.Status
-}
-
 // GetProviderConfigReference returns the ProviderConfig reference.
 func (mg *FirewallRule) GetProviderConfigReference() *xpv1.Reference {
 	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
@@ -211,18 +195,4 @@ func (l *FirewallRuleList) GetItems() []resource.Managed {
 		items[i] = &l.Items[i]
 	}
 	return items
-}
-
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *FirewallRuleList) DeepCopyObject() runtime.Object {
-	out := &FirewallRuleList{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *FirewallRuleList) DeepCopyInto(out *FirewallRuleList) {
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	out.Items = append([]FirewallRule(nil), in.Items...)
 }

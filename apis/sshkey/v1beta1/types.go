@@ -20,7 +20,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	xpv1 "github.com/crossplane/crossplane/apis/v2/core/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // SSHKeyParameters are the configurable fields of a Hostinger SSH Key.
@@ -116,21 +115,6 @@ func (mg *SSHKey) SetManagementPolicies(mp xpv1.ManagementPolicies) {
 	mg.Spec.ManagementPolicies = mp
 }
 
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *SSHKey) DeepCopyObject() runtime.Object {
-	out := &SSHKey{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *SSHKey) DeepCopyInto(out *SSHKey) {
-	out.TypeMeta = in.TypeMeta
-	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
-	out.Status = in.Status
-}
-
 // GetProviderConfigReference returns the ProviderConfig reference.
 func (mg *SSHKey) GetProviderConfigReference() *xpv1.Reference {
 	if mg.Spec.ProviderConfigReference != nil && mg.Spec.ProviderConfigReference.Name != "" {
@@ -146,18 +130,4 @@ func (l *SSHKeyList) GetItems() []resource.Managed {
 		items[i] = &l.Items[i]
 	}
 	return items
-}
-
-// DeepCopyObject returns a deep copy of this object as runtime.Object.
-func (in *SSHKeyList) DeepCopyObject() runtime.Object {
-	out := &SSHKeyList{}
-	in.DeepCopyInto(out)
-	return out
-}
-
-// DeepCopyInto fills DeepCopy receiver with DeepCopy of the provided receiver.
-func (in *SSHKeyList) DeepCopyInto(out *SSHKeyList) {
-	out.TypeMeta = in.TypeMeta
-	in.ListMeta.DeepCopyInto(&out.ListMeta)
-	out.Items = append([]SSHKey(nil), in.Items...)
 }
