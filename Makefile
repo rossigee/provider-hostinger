@@ -14,6 +14,13 @@ IMAGES = provider-hostinger
 
 # Crossplane package configuration
 XPKGS = provider-hostinger
+# Override xpkg publish to build all platforms (stock build only builds current arch)
+xpkg.release.publish.ghcr.io/rossigee.provider-hostinger:
+	@$(foreach plat,$(XPKG_LINUX_PLATFORMS),$(MAKE) xpkg.build.provider-hostinger PLATFORM=$(plat) || exit 1;)
+	@$(CROSSPLANE_CLI) xpkg push \
+		$(foreach plat,$(XPKG_LINUX_PLATFORMS),--package-files $(XPKG_OUTPUT_DIR)/$(plat)/provider-hostinger-$(VERSION).xpkg ) \
+		ghcr.io/rossigee/provider-hostinger:$(VERSION)
+	@$(OK) Pushed package ghcr.io/rossigee/provider-hostinger:$(VERSION)
 
 # Go configuration
 GO_SUBDIRS := cmd apis internal
@@ -36,3 +43,7 @@ PLATFORMS ?= linux_amd64
 
 # Ensure package metadata exists before build
 xpkg.build.provider-hostinger: do.build.images
+
+# Neutralize plain image publish for ghcr (xpkg uses same ref; plain push would clobber package.yaml)
+img.release.publish.ghcr.io/rossigee.provider-hostinger:
+	@:
