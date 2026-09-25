@@ -11,7 +11,7 @@ A Crossplane provider for managing Hostinger VPS and cloud services.
 
 ## Container Registry
 
-- **Primary**: `ghcr.io/rossigee/provider-hostinger:v0.1.0`
+- **Primary**: `ghcr.io/rossigee/provider-hostinger:v0.2.5`
 
 ## Overview
 
@@ -39,7 +39,7 @@ A Crossplane provider for managing Hostinger VPS and cloud services.
 ### Prerequisites
 
 - Kubernetes cluster (v1.24+)
-- Crossplane v2.0+ installed
+- Crossplane v2.5.0 or later installed
 - kubectl configured to access your cluster
 
 ### Install the Provider
@@ -51,7 +51,7 @@ kind: Provider
 metadata:
   name: provider-hostinger
 spec:
-  package: ghcr.io/rossigee/provider-hostinger:v0.1.0
+  package: ghcr.io/rossigee/provider-hostinger:v0.2.5
   packagePullPolicy: IfNotPresent
 EOF
 ```
@@ -61,7 +61,7 @@ Wait for the provider to be ready:
 ```bash
 kubectl get providers
 # NAME                  INSTALLED   HEALTHY   PACKAGE                                         AGE
-# provider-hostinger    True        True      ghcr.io/rossigee/provider-hostinger:v0.1.0     1m
+# provider-hostinger    True        True      ghcr.io/rossigee/provider-hostinger:v0.2.5     1m
 ```
 
 ## Configuration

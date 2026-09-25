@@ -11,10 +11,10 @@
 ```
 ✅ .gitmodules                          - Build submodule reference
 ✅ Makefile                             - Build system orchestration
-✅ go.mod                               - Go 1.25 dependencies
+✅ go.mod                               - Go 1.27.1 dependencies
 ✅ package/crossplane.yaml              - CRITICAL: Provider metadata
 ✅ cluster/images/provider-hostinger/Dockerfile - CRITICAL: ENTRYPOINT pattern
-✅ VERSION                              - v0.1.0 release version
+✅ VERSION                              - v0.2.5 release version
 ✅ build/                               - rossigee/build submodule initialized
 ```
 
@@ -184,7 +184,7 @@ tar -tf _output/xpkg/linux_amd64/provider-hostinger-*.xpkg | grep manifest.json
 |------|---------|---------|-------|
 | `.gitmodules` | Submodule config | ✅ | Points to github.com/rossigee/build |
 | `Makefile` | Build orchestration | ✅ | Includes all standard targets |
-| `go.mod` | Dependencies | ✅ | Go 1.25, Crossplane 1.21.0 |
+| `go.mod` | Dependencies | ✅ | Go 1.27.1, Crossplane 2.5.0 |
 | `package/crossplane.yaml` | Provider metadata | ✅ | **CRITICAL** - NOT package.yaml |
 | `Dockerfile` | Container image | ✅ | **CRITICAL** - Uses ENTRYPOINT |
 | `apis/v1beta1/*` | ProviderConfig | ✅ | v1 key + v2 OAuth support |
@@ -195,8 +195,8 @@ tar -tf _output/xpkg/linux_amd64/provider-hostinger-*.xpkg | grep manifest.json
 
 ## Environment
 
-- **Go Version**: 1.25.3
-- **Crossplane Version**: 2.0.2
+- **Go Version**: 1.27.1
+- **Crossplane Version**: 2.5.0
 - **Build System**: github.com/rossigee/build
 - **Registry**: ghcr.io/rossigee/provider-hostinger
 - **API Pattern**: v1beta1 (namespaced) with .m. API groups

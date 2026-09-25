@@ -12,4 +12,4 @@ spec:
   permissionRequests: []
   controller: {}
   crossplane:
-    version: ">=v2.0.0"
+    version: ">=v2.5.0"

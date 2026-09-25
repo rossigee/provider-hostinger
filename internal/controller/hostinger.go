@@ -76,7 +76,7 @@ func setupRBAC(c client.Client, l logging.Logger) error {
 			Verbs:     []string{"get", "list", "watch", "update", "patch", "create"},
 		},
 		{
-			APIGroups: []string{"hostinger.crossplane.io", "sshkey.m.hostinger.crossplane.io", "instance.m.hostinger.crossplane.io", "firewall.m.hostinger.crossplane.io", "backup.m.hostinger.crossplane.io"},
+			APIGroups: []string{"hostinger.m.crossplane.io", "sshkey.m.hostinger.crossplane.io", "instance.m.hostinger.crossplane.io", "firewall.m.hostinger.crossplane.io", "backup.m.hostinger.crossplane.io"},
 			Resources: []string{"*/finalizers"},
 			Verbs:     []string{"update"},
 		},

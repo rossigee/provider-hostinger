@@ -5,7 +5,7 @@ PROJECT_REPO := github.com/rossigee/$(PROJECT_NAME)
 # Build configuration
 REGISTRY_ORGS = ghcr.io/rossigee
 XPKG_REG_ORGS ?= ghcr.io/rossigee
-CROSSPLANE_VERSION = 2.0.2
+CROSSPLANE_VERSION = 2.5.0
 GO_REQUIRED_VERSION ?= 1.27.1
 GOLANGCILINT_VERSION ?= 2.13.2
 
@@ -31,7 +31,7 @@ GO_LDFLAGS += -X $(GO_PROJECT)/internal/version.Version=$(VERSION)
 # Directories
 S3_BUCKET_PATH ?= crossplane-releases
 HELM_S3_BUCKET_PATH ?= crossplane-releases/helm
-PLATFORMS ?= linux_amd64
+PLATFORMS ?= linux_amd64 linux_arm64
 
 # Include build system makefiles
 -include build/makelib/common.mk
