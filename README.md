@@ -425,7 +425,7 @@ Apache License 2.0 - See [LICENSE](LICENSE) for details
 
 ## Security
 
-For security vulnerabilities, please email security@golder.tech instead of using the issue tracker.
+For security vulnerabilities, please email security@example.com instead of using the issue tracker.
 
 ## Related Resources
 
